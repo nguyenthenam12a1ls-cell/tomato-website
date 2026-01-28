@@ -406,8 +406,8 @@ Dự án này được phát hành dưới MIT License.
 ## 👨‍💻 Tác Giả
 
 **Your Name**
-- Email: babanguyen325@gmail.com
-- GitHub: [@yourusername](https://github.com/yourusername)
+- Email: kiritonguyen1411lh@gmail.com
+- GitHub: https://github.com/nguyenthenam12a1ls-cell
 
 ---
 
@@ -429,3 +429,4 @@ Dự án này được phát hành dưới MIT License.
 Made with ❤️ by [Your Name]
 
 </div>
+
