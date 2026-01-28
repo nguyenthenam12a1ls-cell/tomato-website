@@ -1,0 +1,173 @@
+.food-details-page {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+    min-height: 70vh;
+}
+
+.food-details-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    animation: fadeIn 0.5s ease;
+}
+
+/* CỘT TRÁI (ẢNH) */
+.food-details-left {
+    width: 100%;
+}
+.food-details-left img {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* CỘT PHẢI (THÔNG TIN) */
+.food-details-right {
+    display: flex;
+    flex-direction: column;
+}
+
+.details-food-name {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--text-color-primary, #262626);
+    margin-bottom: 10px;
+}
+
+.details-food-rating {
+    margin-bottom: 15px;
+}
+.details-food-rating img {
+    width: 100px;
+}
+
+.details-food-price {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--primary-color, tomato);
+    margin-bottom: 20px;
+}
+
+.details-food-desc {
+    font-size: 15px;
+    color: var(--text-color-secondary, #676767);
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+/* NÚT THÊM VÀO GIỎ */
+.details-add-to-cart {
+    margin-bottom: 30px;
+}
+.details-add-btn {
+    border: none;
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: var(--primary-color, tomato);
+    color: var(--color-white, white);
+    transition: all 0.3s;
+}
+.details-add-btn:hover {
+    box-shadow: 0 4px 15px rgba(255, 99, 71, 0.3);
+    transform: scale(1.02);
+}
+.details-counter {
+    width: fit-content;
+}
+
+.details-food-category {
+    font-size: 14px;
+    color: var(--text-color-light, #808080);
+}
+.details-food-category strong {
+    color: var(--text-color-secondary, #676767);
+}
+
+
+/* --- CSS CHO TAB --- */
+.food-details-tabs {
+    margin-top: 50px;
+    border: 1px solid var(--border-color-light, #e2e2e2);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.tabs-nav {
+    display: flex;
+    background-color: #f9f9f9;
+}
+.tabs-nav button {
+    padding: 15px 25px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-color-secondary, #676767);
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+}
+.tabs-nav button.active {
+    color: var(--primary-color, tomato);
+    border-bottom-color: var(--primary-color, tomato);
+    background-color: var(--color-white, white);
+}
+
+.tabs-content {
+    padding: 25px;
+    background-color: var(--color-white, white);
+}
+.tab-description p,
+.tab-reviews p {
+    font-size: 15px;
+    color: var(--text-color-secondary, #676767);
+    line-height: 1.7;
+}
+
+/* --- CSS CHO MÓN LIÊN QUAN --- */
+.related-products {
+    margin-top: 60px;
+}
+.related-products .food-display h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-color-primary, #262626);
+    margin-bottom: 30px;
+}
+
+
+/* --- SỬA LẠI TRẠNG THÁI LOADING/COMING SOON --- */
+.food-details-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    gap: 20px;
+    font-size: 18px;
+    color: var(--text-color-secondary, #676767);
+    text-align: center; /* Thêm căn giữa */
+}
+/* XÓA BỎ SPINNER */
+.food-details-loading .spinner {
+    display: none; 
+}
+
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .food-details-container {
+        grid-template-columns: 1fr; /* 1 cột */
+        gap: 30px;
+    }
+    .details-food-name {
+        font-size: 26px;
+    }
+    .details-food-price {
+        font-size: 24px;
+    }
+}

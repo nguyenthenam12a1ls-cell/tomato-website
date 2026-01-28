@@ -1,0 +1,146 @@
+.place-order {
+    display: grid;
+    grid-template-columns: 2fr 1fr; 
+    gap: 40px;
+    align-items: flex-start;
+    margin-top: 50px;
+    padding: 0 5%;
+}
+
+.place-order-left {
+    width: 100%;
+}
+.place-order-left .title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-color-primary, #262626);
+    margin-bottom: 30px;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color-secondary, #676767);
+}
+.place-order-left input {
+    width: 100%;
+    padding: 12px 15px; 
+    border: 1px solid var(--border-color-medium, #c9c9c9);
+    border-radius: 5px; 
+    outline-color: var(--primary-color, tomato);
+    font-size: 15px;
+    background-color: #f9f9f9;
+}
+.place-order-left input:focus {
+    background-color: var(--color-white, white);
+    border-color: var(--primary-color, tomato);
+}
+.place-order-left .multi-fields {
+    display: flex;
+    gap: 20px;
+}
+.place-order-left .multi-fields .form-group {
+    width: 100%; 
+}
+
+.place-order-right {
+    width: 100%;
+    position: sticky;
+    top: 120px; 
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* --- THÊM STYLE MỚI CHO PAYMENT --- */
+.payment-method {
+    padding: 25px;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid var(--border-color-light, #e2e2e2);
+}
+.payment-method .title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.payment-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: tomato;
+}
+.payment-option label {
+    font-size: 15px;
+    font-weight: 500;
+}
+/* ---------------------------------- */
+
+
+.cart-total {
+    padding: 25px;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid var(--border-color-light, #e2e2e2);
+}
+.cart-total h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+.cart-total-details {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-color-secondary, #676767);
+}
+.cart-total hr {
+    margin: 10px 0px;
+    border: none;
+    height: 1px;
+    background-color: var(--border-color-light, #e2e2e2);
+}
+.cart-total .total-bold {
+    color: var(--text-color-primary, #262626);
+    font-size: 17px;
+}
+
+.place-order-submit {
+    border: none;
+    color: var(--color-white, white);
+    background-color: var(--primary-color, tomato);
+    width: 100%;
+    padding: 14px 0px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s;
+    margin-top: 30px; 
+}
+.place-order-submit:hover {
+    box-shadow: 0 4px 15px rgba(255, 99, 71, 0.3);
+    transform: scale(1.02);
+}
+
+@media (max-width: 900px) {
+    .place-order {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    .place-order-right {
+        position: relative;
+        top: 0;
+        order: -1; 
+    }
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "code": "WELCOME2025SAVE10",
+    "discount": 10,
+    "description": "Giảm 10% cho khách hàng mới trong năm 2025"
+  },
+  {
+    "code": "SUMMER-20-OFF",
+    "discount": 20,
+    "description": "Giảm 20% cho đơn hàng mùa hè"
+  },
+  {
+    "code": "BLACKFRIDAY50",
+    "discount": 50,
+    "description": "Siêu ưu đãi Black Friday giảm 50%"
+  },
+  {
+    "code": "FREESHIP70SALE",
+    "discount": 70,
+    "description": "Giảm 70% và miễn phí giao hàng cho đơn lớn"
+  },
+  {
+    "code": "NEWYEAR2026MEGA",
+    "discount": 60,
+    "description": "Giảm 60% cho đợt khuyến mãi đầu năm mới 2026"
+  },
+  {
+    "code": "VIP-EXCLUSIVE-30",
+    "discount": 30,
+    "description": "Mã đặc biệt cho thành viên VIP giảm 30%"
+  },
+  {
+    "code": "STUDENT-DEAL25",
+    "discount": 25,
+    "description": "Giảm 25% cho sinh viên có ID hợp lệ"
+  },
+  {
+    "code": "FLASHSALE-12H-40",
+    "discount": 40,
+    "description": "Giảm 40% cho đơn đặt trong vòng 12 giờ"
+  },
+  {
+    "code": "AUTUMN2025-OFF15",
+    "discount": 15,
+    "description": "Giảm 15% cho chương trình ưu đãi mùa thu"
+  },
+  {
+    "code": "SUPERWEEKEND-35",
+    "discount": 35,
+    "description": "Giảm 35% cho các đơn cuối tuần"
+  }
+]
