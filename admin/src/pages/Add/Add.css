@@ -1,0 +1,104 @@
+/* --- TRANG CHUNG --- */
+.add {
+    width: 100%; /* Sửa từ 70% */
+    padding: 20px max(5vw, 25px); /* Thêm padding */
+    box-sizing: border-box; 
+    color: #333; /* Đổi màu chữ */
+    font-size: 16px;
+    animation: fadeIn 0.5s;
+}
+
+/* --- THẺ (CARD) BỌC NGOÀI --- */
+.add-container {
+    max-width: 800px;
+    margin: 30px 0; /* Bỏ margin-left */
+    padding: 30px 35px;
+    background-color: var(--color-white, #ffffff);
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.add-form {
+    display: flex;
+    flex-direction: column; /* Đổi sang flex-col */
+    gap: 25px;
+}
+
+/* --- STYLE CHUNG CHO CÁC KHỐI --- */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+.form-group p {
+    font-size: 14px;
+    color: var(--text-color-secondary, #676767);
+    font-weight: 500;
+}
+
+/* --- UPLOAD ẢNH --- */
+.add-img-upload .upload-area-label {
+    cursor: pointer;
+}
+.add-img-upload img{
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px dashed #a9a9a9;
+    padding: 5px;
+}
+
+/* --- INPUT VÀ TEXTAREA (ĐỒNG BỘ STYLE) --- */
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color-medium, #c9c9c9);
+    border-radius: 5px;
+    font-size: 15px;
+    outline-color: var(--primary-color, tomato);
+    background-color: #f9f9f9;
+    box-sizing: border-box; 
+    font-family: 'Outfit', sans-serif; /* Đảm bảo font */
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    background-color: var(--color-white, white);
+    border-color: var(--primary-color, tomato);
+}
+
+/* (Xóa bỏ .add-product-name, .add-product-description vì đã gộp vào .form-group) */
+
+/* --- CATEGORY VÀ PRICE --- */
+.add-category-price{
+    display: flex;
+    gap: 30px;
+}
+.add-category, .add-price {
+    flex: 1; /* Chia đều */
+}
+/* (Xóa bỏ style .add-category-price select/input vì đã gộp) */
+
+
+/* --- NÚT BẤM (ĐỒNG BỘ STYLE) --- */
+.add-btn{
+    margin-top: 20px;
+    max-width: 150px; /* Tăng chiều rộng 1 chút */
+    border: none;
+    padding: 12px 25px; /* Tăng padding */
+    border-radius: 50px; /* Bo tròn */
+    background-color: var(--primary-color, tomato); /* ĐỔI MÀU */
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+.add-btn:hover {
+    box-shadow: 0 4px 15px rgba(255, 99, 71, 0.3);
+    transform: scale(1.02);
+}

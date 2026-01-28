@@ -1,0 +1,89 @@
+/* --- TRANG CHUNG (Lấy từ Add.css) --- */
+.list.add {
+    width: 100%; /* Sửa từ 70% */
+    padding: 20px max(5vw, 25px); 
+    box-sizing: border-box; 
+    color: #333; 
+    font-size: 16px;
+    animation: fadeIn 0.5s;
+}
+
+/* --- THẺ (CARD) BỌC NGOÀI (Lấy từ Add.css) --- */
+.list-container {
+    max-width: 100%; /* Chiếm toàn bộ chiều rộng */
+    margin: 30px 0;
+    padding: 25px;
+    background-color: var(--color-white, #ffffff);
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.list-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+/* --- BẢNG (TABLE) --- */
+.list-table-format{
+    display: grid;
+    /* Giữ nguyên cột của bạn (0.5fr 2fr 1fr 1fr 1fr) */
+    grid-template-columns: 0.5fr 2fr 1fr 1fr 1fr;
+    align-items: center;
+    gap: 15px; /* Tăng gap */
+    padding: 12px 15px;
+    /* border: 1px solid #cacaca; */ /* Bỏ border cũ */
+    border-bottom: 1px solid #e2e2e2; /* Thay bằng border-bottom */
+    font-size: 14px; /* Tăng font */
+    color: #505050;
+}
+.list-table-format:last-child {
+    border-bottom: none; /* Bỏ border cho dòng cuối */
+}
+
+/* Tiêu đề của bảng */
+.list-table-format.title{
+    background-color: #f9f9f9;
+    font-weight: 600;
+    color: #333;
+    border-radius: 5px 5px 0 0; /* Bo góc cho tiêu đề */
+}
+
+.list-item-image{
+    width: 50px;
+    height: 50px; /* Thêm height */
+    border-radius: 5px; /* Bo góc ảnh */
+    object-fit: cover; /* Đảm bảo ảnh vừa vặn */
+}
+
+/* --- ICON ACTION (ĐÃ SỬA LỖI LẶP) --- */
+.action-icons {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-start;
+    align-items: center; /* Đổi sang center */
+}
+
+.action-icon {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.3s;
+}
+.action-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* (Xóa bỏ các class .action-icon-edit/delete cũ) */
+
+@media (max-width:600px) {
+    .list-table-format{
+        grid-template-columns: 1fr 3fr 1fr;
+        gap: 15px;
+    }
+    .list-table-format.title{
+        display: none;
+    }
+}

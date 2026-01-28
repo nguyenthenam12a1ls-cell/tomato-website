@@ -1,0 +1,129 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 4%; 
+    position: relative; 
+    border-bottom: 1px solid #e2e2e2; 
+    background-color: #ffffff;
+}
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.navbar-logo p {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-color-primary, #262626);
+}
+.navbar-logo span {
+    font-weight: 500;
+    color: var(--primary-color, tomato);
+}
+
+.navbar .profile {
+    width: 40px;
+    height: 40px; 
+    border-radius: 50%; 
+    cursor: pointer;
+    object-fit: cover;
+    border: 2px solid #e2e2e2; 
+}
+
+/* THIẾT KẾ POPUP PROFILE */
+.navbar-profile-popup {
+    position: absolute;
+    top: calc(100% + 10px); 
+    right: 4%;
+    z-index: 100;
+    
+    width: max(250px, 18vw);
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px; 
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+    
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; 
+    animation: slideDown 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.popup-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 20px; 
+    border-bottom: 1px solid #eee;
+}
+
+.popup-user-info img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.popup-user-info div {
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-user-info h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.popup-user-info p {
+    margin: 0;
+    font-size: 13px;
+    color: #6d6d6d;
+}
+
+/* SỬA LỖI CÂN BẰNG ICON */
+.popup-logout-btn {
+    width: 100%;
+    margin: 0;
+    padding: 15px 20px;
+    border: none;
+    background-color: transparent; 
+    color: #505050; /* Đổi màu chữ */
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    
+    /* Căn giữa icon và chữ */
+    display: flex;
+    align-items: center; 
+    gap: 10px;
+}
+.popup-logout-btn img {
+    width: 18px;
+    height: 18px; /* Đảm bảo cân bằng */
+    object-fit: contain;
+    opacity: 0.8;
+}
+
+.popup-logout-btn:hover {
+    background-color: #fff0ed;
+    color: tomato;
+}
+.popup-logout-btn:hover img {
+    opacity: 1;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

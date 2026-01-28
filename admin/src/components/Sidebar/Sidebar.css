@@ -1,0 +1,91 @@
+.sidebar{
+  width: 18%;
+  min-height: 100vh;
+  /* Bỏ border cũ */
+  /* border: 1.5px solid #a9a9a9; */
+  /* border-top: 0; */
+  
+  /* Thêm nền và border-right tinh tế */
+  background-color: #f9f9f9;
+  border-right: 1px solid #e2e2e2;
+  font-size: max(1vw,10px);
+}
+.sidebar-options{
+  padding-top: 50px;
+  padding-left: 0; /* Xóa padding cũ */
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Giảm gap */
+}
+
+.sidebar-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    /* Xóa border cũ */
+    /* border: 1px solid #a9a9a9; */
+    
+    padding: 12px 20px; /* Căn lề padding mới */
+    margin: 0 10px; /* Thêm margin 2 bên */
+    border-radius: 6px; /* Bo góc */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    /* Style chữ */
+    color: #505050;
+    font-weight: 500;
+}
+
+.sidebar-option img {
+    width: 20px;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+/* HIỆU ỨNG HOVER */
+.sidebar-option:hover {
+    background-color: #ebebeb;
+}
+
+/* HIỆU ỨNG ACTIVE (KHI ĐƯỢC CHỌN) */
+.sidebar-option.active{
+    background-color: #fff0ed;
+    /* border-color: tomato; */ /* Xóa border */
+    
+    /* Thêm thanh active bên trái */
+    border-left: 4px solid tomato;
+    border-radius: 0 6px 6px 0;
+    margin-left: 0; /* Căn sát lề */
+    padding-left: 16px; /* Đẩy text vào (20px - 4px) */
+    color: tomato;
+}
+.sidebar-option.active img {
+    opacity: 1;
+}
+
+
+@media (max-width:900px) {
+    /* Style cho mobile (chỉ hiện icon) */
+    .sidebar {
+        width: auto; /* Tự co lại */
+    }
+    .sidebar-options {
+        padding-top: 30px;
+        align-items: center;
+        padding-left: 0;
+    }
+    .sidebar-option {
+        margin: 0 5px;
+        padding: 10px;
+        border-radius: 50%; /* Bo tròn */
+    }
+    .sidebar-option p{
+        display: none;
+    }
+    .sidebar-option.active {
+        border-left: none; /* Bỏ thanh active */
+        padding: 10px; /* Reset padding */
+        margin: 0 5px;
+    }
+}

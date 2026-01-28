@@ -1,0 +1,157 @@
+/* --- TRANG CHUNG (Lấy từ Add.css) --- */
+.order.add {
+    width: 100%; /* Sửa từ 70% */
+    padding: 20px max(5vw, 25px); 
+    box-sizing: border-box; 
+    color: #333; 
+    font-size: 16px;
+    animation: fadeIn 0.5s;
+}
+
+/* --- THẺ (CARD) BỌC NGOÀI (Lấy từ Add.css) --- */
+.order-container {
+    max-width: 100%; /* Chiếm toàn bộ chiều rộng */
+    margin: 30px 0;
+    padding: 25px;
+    background-color: var(--color-white, #ffffff);
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.order.add h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 25px;
+}
+
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* --- THIẾT KẾ LẠI THẺ ĐƠN HÀNG --- */
+.order-item {
+  display: grid;
+  /* Cột: Icon, Chi tiết (rộng), Thông tin, Trạng thái */
+  grid-template-columns: 0.5fr 2.5fr 1fr 1.2fr;
+  align-items: start;
+  gap: 25px;
+  
+  /* Bỏ border cũ */
+  /* border: 1px solid tomato; */
+  border: 1px solid var(--border-color-light, #e2e2e2);
+  
+  padding: 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #505050;
+  transition: box-shadow 0.3s ease;
+}
+.order-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.order-item img {
+  width: 40px;
+  align-self: center; /* Căn giữa icon */
+  opacity: 0.8;
+}
+
+.order-item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Tăng gap 1 chút */
+}
+
+.order-item-food {
+  font-weight: 600;
+  color: var(--text-color-primary, #262626);
+}
+
+.order-item-name {
+  font-weight: 600;
+  margin-top: 15px; /* Tách biệt tên khách */
+  margin-bottom: 5px;
+}
+
+.order-item-address p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.order-item-phone {
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+.order-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+}
+.order-item-amount {
+    font-weight: 600;
+    color: var(--primary-color, tomato);
+    font-size: 16px;
+}
+
+
+/* --- NÂNG CẤP SELECT TRẠNG THÁI --- */
+.order-item-status {
+    text-align: right;
+}
+.status-select {
+  width: 100%;
+  max-width: 150px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  background-color: #f8f8f8;
+  cursor: pointer;
+  font-weight: 500;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.3s;
+}
+
+/* Style theo từng trạng thái */
+.status-select.status-food-processing {
+    background-color: #fff0e0;
+    border-color: #ffc975;
+    color: #b47d00;
+}
+.status-select.status-out-for-delivery {
+    background-color: #e6f7ff;
+    border-color: #89d1ff;
+    color: #0056b3;
+}
+.status-select.status-delivered {
+    background-color: #e8f5e9;
+    border-color: #a5d6a7;
+    color: #2e7d32;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .order-item {
+    grid-template-columns: 1fr 1fr; /* 2 cột */
+    font-size: 13px;
+    padding: 15px;
+    gap: 20px;
+  }
+  .order-item img {
+      display: none; /* Ẩn icon */
+  }
+  .order-item-info {
+      align-items: flex-start;
+  }
+  .order-item-status {
+      grid-column: 1 / -1; /* Trạng thái chiếm cả hàng */
+      text-align: left;
+  }
+  .status-select {
+      max-width: 100%;
+  }
+}

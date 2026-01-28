@@ -1,0 +1,150 @@
+/* === DASHBOARD WRAPPER === */
+.dashboard {
+  width: 100%;
+  padding: 20px max(5vw, 25px);
+  margin: 0;
+  color: #333;
+  box-sizing: border-box; 
+}
+
+.dashboard h2 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+/* === STAT CARDS === */
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  padding: 25px 20px;
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  border-left: 6px solid;
+}
+
+.stat-card h3 { font-size: 15px; color:#6d6d6d; margin-bottom:10px; }
+.stat-card p { font-size: 30px; font-weight:700; }
+
+.stat-card.revenue { border-color:#4CAF50; color:#4CAF50; }
+.stat-card.orders  { border-color:#FFC107; color:#FFC107; }
+.stat-card.users   { border-color:#03A9F4; color:#03A9F4; }
+
+/* === LAYOUT === */
+.dashboard-main-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+/* === CHART CARD === */
+.dashboard-chart {
+  background:white;
+  border-radius:16px;
+  padding:20px 20px 10px;
+  box-shadow:0 4px 24px rgba(0,0,0,0.05);
+  display:flex;
+  flex-direction:column;
+  border:1px solid rgba(230,230,230,0.7);
+}
+
+.chart-filter-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 15px;
+  align-items: center;
+  flex-wrap: wrap; 
+}
+
+/* === SỬA LỖI "CHẢY XUỐNG" === */
+.chart-select {
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #f8f9fa;
+  cursor: pointer;
+  outline: none;
+  transition: 0.2s;
+  
+  /* XÓA: width: 200px; */
+  flex: 1; /* THÊM: Để co giãn */
+  min-width: 150px; /* THÊM: Chiều rộng tối thiểu */
+}
+/* === KẾT THÚC SỬA === */
+
+
+.chart-select:hover {
+  background: #ececec;
+}
+
+.chart-select:focus {
+  border-color: #ff5e3a;
+  box-shadow: 0 0 0 2px rgba(255,94,58,0.2);
+}
+
+/* === CHART WRAPPER === */
+.chart-wrapper {
+  height: 400px;
+  position: relative;
+}
+
+.chart-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* === RECENT ORDERS === */
+.dashboard-recent {
+  background:white;
+  padding:20px;
+  border-radius:16px;
+  box-shadow:0 4px 24px rgba(0,0,0,0.05);
+  border:1px solid rgba(230,230,230,0.7);
+}
+
+.dashboard-recent h3 {
+  font-size:18px;
+  font-weight:600;
+  margin-bottom:15px;
+}
+
+.recent-orders-list { display:flex; flex-direction:column; gap:10px; }
+
+.recent-order-item {
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:15px;
+  padding:10px 0;
+  border-bottom:1px solid #eee;
+}
+
+.recent-order-item img { width:40px; }
+
+.recent-order-items {
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:200px;
+}
+
+.recent-order-user { font-size:13px; color:#666; margin-top:3px; }
+.recent-order-amount { font-weight:700; color:#ff5e3a; }
+
+/* === RESPONSIVE === */
+@media(max-width:1200px) {
+  .dashboard-main-content { grid-template-columns:1fr; }
+}
+
+@media(max-width:600px) {
+  /* .chart-select {
+    width: 100%; (Không cần thiết nếu dùng flex-wrap)
+  } */
+}
