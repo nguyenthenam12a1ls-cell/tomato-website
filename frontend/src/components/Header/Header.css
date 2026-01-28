@@ -1,0 +1,118 @@
+.header {
+    height: 40vw;
+    /* Tăng chiều cao lên 1 chút */
+    min-height: 400px;
+    /* Đảm bảo chiều cao tối thiểu trên màn hình nhỏ */
+    margin: 30px auto;
+    position: relative;
+    /* Cần cho lớp phủ */
+    border-radius: 15px;
+    /* Bo góc cho hiện đại */
+    overflow: hidden;
+    /* Đảm bảo lớp phủ cũng bị bo góc */
+
+    /* 1. SỬ DỤNG ẢNH NỀN */
+    /* (Sử dụng đường dẫn /header_img.png như file gốc của bạn) */
+    background: url('/header_img.png') no-repeat;
+
+    /* 2. THAY ĐỔI LỚN: 'cover' thay vì 'contain' */
+    background-size: cover;
+    /* Ảnh sẽ luôn lấp đầy, không có viền trắng */
+    background-position: center;
+    /* Luôn ưu tiên giữ giữa ảnh */
+
+    /* 3. CĂN GIỮA NỘI DUNG BẰNG FLEXBOX */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    /* Căn giữa text trong nội dung */
+}
+
+/* 4. THÊM LỚP PHỦ TỐI MỜ (OVERLAY) */
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Lớp phủ dốc từ đen (40%) sang trong suốt */
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.1) 100%);
+    z-index: 1;
+}
+
+/* 5. NÂNG CẤP NỘI DUNG */
+.header-contents {
+    position: relative;
+    /* Đẩy nội dung lên trên lớp phủ */
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Căn giữa nút bấm */
+    gap: 1.5vw;
+    max-width: 65%;
+    /* Giới hạn chiều rộng nội dung */
+    animation: fadeIn 3s;
+}
+
+.header-contents h2 {
+    font-weight: 600;
+    color: var(--color-white, white);
+    /* Giữ màu trắng */
+    font-size: max(4vw, 36px);
+    /* Tăng kích thước chữ */
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    /* Thêm bóng đổ cho chữ */
+}
+
+.header-contents p {
+    color: var(--footer-text, #d9d9d9);
+    /* Dùng màu xám nhạt */
+    font-size: max(1vw, 15px);
+    line-height: 1.5;
+}
+
+/* 6. STYLE NÚT BẤM (Giữ nguyên từ Bước 8.2) */
+.header-contents .header-btn {
+    border: none;
+    color: var(--color-white, white);
+    font-weight: 500;
+    padding: 1vw 2.3vw;
+    background-color: var(--primary-color, tomato);
+    font-size: max(1vw, 14px);
+    border-radius: 50px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    /* Thêm khoảng cách */
+}
+
+.header-contents .header-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 5px 15px rgba(255, 99, 71, 0.3);
+}
+
+/* 7. RESPONSIVE */
+@media (max-width:1050px) {
+    .header-contents {
+        max-width: 75%;
+    }
+}
+
+@media (max-width:750px) {
+    .header-contents {
+        max-width: 90%;
+    }
+
+    .header-contents h2 {
+        font-size: max(5vw, 28px);
+    }
+
+    .header-contents p {
+        /* Ẩn mô tả trên mobile cho gọn */
+        display: none;
+    }
+}

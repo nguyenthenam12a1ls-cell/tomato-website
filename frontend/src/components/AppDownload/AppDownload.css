@@ -1,0 +1,42 @@
+.app-download {
+  margin: 100px auto;
+  /* Thêm nền tinh tế */
+  background-image: linear-gradient(135deg, #fffaf8 0%, #fff7f2 100%);
+  border-radius: 15px;
+  padding: 6vw 4vw; /* Tăng padding trên/dưới */
+  text-align: center; /* Căn giữa toàn bộ nội dung */
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.03); /* Thêm shadow nhẹ */
+}
+
+.app-download-content h2 {
+  font-size: max(3vw, 28px);
+  font-weight: 600;
+  line-height: 1.3;
+  color: #262626; /* var(--text-color-primary) */
+}
+
+.app-download-content p {
+  font-size: max(1vw, 15px);
+  color: #676767; /* var(--text-color-secondary) */
+  margin: 20px auto 40px auto; /* Tự động căn giữa */
+  line-height: 1.5;
+  max-width: 600px; /* Giới hạn chiều rộng của text */
+}
+
+.app-download-platforms {
+  display: flex;
+  justify-content: center; /* Căn giữa 2 nút */
+  gap: max(2vw, 15px);
+  margin-top: 40px;
+}
+
+.app-download-platforms img {
+  width: max(30vw, 140px); 
+  max-width: 200px;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.app-download-platforms img:hover {
+  transform: scale(1.05);
+}

@@ -1,0 +1,15 @@
+.food-display{  
+    margin-top: 50px; /* Tăng khoảng cách với ExploreMenu */
+}  
+.food-display h2{  
+    font-size: max(2.2vw, 28px);  /* Làm tiêu đề to hơn */
+    font-weight: 600;  
+    color: var(--text-color-primary, #262626); /* Đảm bảo màu sắc nhất quán */
+}  
+.food-display-list{  
+    display: grid;  
+    grid-template-columns: repeat(auto-fill,minmax(240px,1fr));  
+    margin-top: 40px; /* Tăng khoảng cách với tiêu đề */
+    gap: 35px;  /* Tăng khoảng cách giữa các thẻ */
+    row-gap: 50px;
+}

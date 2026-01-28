@@ -1,0 +1,95 @@
+/* DÁN ĐÈ TOÀN BỘ FILE NÀY */
+
+.food-item{  
+    width: 100%;  
+    margin: auto;  
+    border-radius: var(--border-radius-card, 15px);  
+    
+    /* --- NÂNG CẤP HIỆN ĐẠI --- */
+    border: 1px solid #f0f0f0; /* Thêm 1 viền mỏng */
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.04); /* Thêm shadow tinh tế */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Thêm transition */
+    
+    animation: fadeIn 1s;  
+    background-color: var(--color-white, #ffffff); /* Đảm bảo thẻ có nền trắng */
+}
+
+/* Thêm hiệu ứng Hover */
+.food-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.food-item-image{  
+    width: 100%;  
+    border-radius: var(--border-radius-card) var(--border-radius-card) 0px 0px;  
+}  
+.food-item-info{  
+    padding: 20px;  
+}  
+.food-item-name-rating{  
+    display: flex;  
+    justify-content: space-between;  
+    align-items: center;  
+    margin-bottom: 10px;  
+}
+.food-item-name-rating p{  
+    font-size: 18px;  /* Giảm 1 chút */
+    font-weight: 600; /* Tăng độ đậm */
+    color: var(--text-color-primary, #262626); /* Dùng màu text chính */
+}  
+.food-item-name-rating img{  
+    width: 70px;  
+}  
+.food-item-desc{  
+    color: var(--text-color-secondary, #676767);  
+    font-size: 13px; /* Tăng 1 chút */
+    line-height: 1.5; /* Dễ đọc hơn */
+}
+.food-item-price{  
+    color: var(--primary-color, tomato);  
+    font-size: 22px;  
+    font-weight: 600; /* Đậm hơn */
+    margin: 12px 0px;  
+}  
+.food-item-img-container{  
+    position: relative;  
+}  
+
+/* --- NÂNG CẤP NÚT BẤM --- */
+.food-item-img-container .add{  
+    width: 35px;  
+    height: 35px; /* Đảm bảo nó là hình tròn */
+    position: absolute;  
+    bottom: 15px;  
+    right: 15px;  
+    cursor: pointer;  
+    border-radius: var(--border-radius-circle, 50%);
+    
+    /* Thêm hiệu ứng cho nút */
+    transition: transform 0.2s ease;
+}
+.food-item-img-container .add:hover {
+    transform: scale(1.1);
+}
+
+.food-item-counter{  
+    position: absolute;  
+    bottom: 15px;  
+    right: 15px;  
+    display: flex;  
+    align-items: center;  
+    gap: 10px;  
+    padding: 6px;  
+    border-radius: var(--border-radius-button-large, 50px);  
+    background-color: var(--color-white, white);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Thêm shadow cho bộ đếm */
+}
+.food-item-counter img{
+    width: 30px;
+    cursor: pointer;
+}
+.food-item-counter p {
+    color: var(--text-color-primary, #262626);
+    font-weight: 500;
+}
