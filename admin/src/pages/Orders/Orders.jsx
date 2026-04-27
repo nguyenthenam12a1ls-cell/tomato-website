@@ -18,7 +18,7 @@ const Orders = () => {
       } else {
         toast.error("Lỗi khi tải danh sách đơn hàng");
       }
-    } catch (error) {
+    } catch {
       toast.error("Lỗi API: Không thể tải đơn hàng");
     }
   };
@@ -37,7 +37,7 @@ const Orders = () => {
       } else {
         toast.error("Cập nhật trạng thái thất bại");
       }
-    } catch (error) {
+    } catch {
       toast.error("Lỗi API: Không thể cập nhật trạng thái");
     }
   };

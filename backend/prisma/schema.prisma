@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String?
+  googleId  String?  @unique
+  avatar    String   @default("")
+  phone     String   @default("")
+  street    String   @default("")
+  ward      String   @default("")
+  province  String   @default("")
+  country   String   @default("")
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart      Cart?
+  orders    Order[]
+}
+
+model Food {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  image       String
+  category    String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  foodId    Int
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  food      Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, foodId])
+}
+
+model Order {
+  id             Int         @id @default(autoincrement())
+  userId         Int
+  amount         Float
+  status         String      @default("Food Processing")
+  payment        Boolean     @default(false)
+  paymentMethod  String      @default("cod")
+  originalAmount Float?
+  currency       String      @default("usd")
+
+  firstName      String
+  lastName       String
+  email          String
+  street         String
+  city           String
+  state          String
+  zipcode        String
+  country        String
+  phone          String
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items          OrderItem[]
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  orderId    Int
+  foodId     Int?
+  foodName   String
+  foodPrice  Float
+  quantity   Int
+  createdAt  DateTime @default(now())
+
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  food       Food?    @relation(fields: [foodId], references: [id], onDelete: SetNull)
+}

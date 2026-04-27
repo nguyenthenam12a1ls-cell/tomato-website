@@ -35,7 +35,7 @@ const Auth = () => {
             } else {
                 toast.error(response.data.message);
             }
-        } catch (error) {
+        } catch {
             toast.error("Lỗi kết nối, vui lòng thử lại.");
         }
     }

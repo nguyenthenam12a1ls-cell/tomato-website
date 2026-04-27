@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './Profile.css';
-import { assets } from '../../assets/assets'; 
+import { assets } from '../../assets/assets';
 import { useAuth } from '../../Context/AuthContext';
-import { useMutation, useQueryClient } from '@tanstack/react-query'; 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -13,93 +13,108 @@ const Profile = () => {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        name: '', email: '', phone: '',
-        street: '', ward: '', province: '', country: ''
+        name: '',
+        email: '',
+        phone: '',
+        street: '',
+        ward: '',
+        province: '',
+        country: ''
     });
-    
     const [avatarFile, setAvatarFile] = useState(null);
     const [avatarPreview, setAvatarPreview] = useState(null);
+    const [avatarLoadError, setAvatarLoadError] = useState(false);
+
     const fileInputRef = useRef(null);
 
-    // --- LOGIC FORM ---
     const resetForm = () => {
-        if (user) {
-            setFormData({
-                name: user.name || '',
-                email: user.email || '',
-                phone: user.phone || '',
-                street: user.street || '',
-                ward: user.ward || '',
-                province: user.province || '',
-                country: user.country || 'Vietnam',
-            });
-            setAvatarFile(null);
-            setAvatarPreview(null);
-        }
+        if (!user) return;
+
+        setFormData({
+            name: user.name || '',
+            email: user.email || '',
+            phone: user.phone || '',
+            street: user.street || '',
+            ward: user.ward || '',
+            province: user.province || '',
+            country: user.country || 'Vietnam',
+        });
+        setAvatarFile(null);
+        setAvatarPreview(null);
     };
 
     useEffect(() => {
         resetForm();
     }, [user]);
 
+    useEffect(() => {
+        setAvatarLoadError(false);
+    }, [user?.avatar, avatarPreview]);
+
     const handleChange = (e) => {
-        const { name, value } = e.target; 
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    // --- LOGIC AVATAR (Giữ nguyên) ---
     const handleAvatarChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setAvatarFile(file);
-            setAvatarPreview(URL.createObjectURL(file));
-        }
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setAvatarFile(file);
+        setAvatarPreview(URL.createObjectURL(file));
     };
 
-    // --- LOGIC SUBMIT (Giữ nguyên) ---
     const updateProfileMutation = useMutation({
         mutationFn: async (formDataToSubmit) => {
-            const response = await axios.put(url + "/api/user/update", formDataToSubmit, {
-                headers: { 
-                    token: token,
+            const response = await axios.put(`${url}/api/user/update`, formDataToSubmit, {
+                headers: {
+                    token,
                     'Content-Type': 'multipart/form-data'
                 }
             });
             return response.data;
         },
         onSuccess: (data) => {
-            if (data.success) {
-                toast.success(data.message || "Cập nhật hồ sơ thành công!");
-                queryClient.invalidateQueries(['userProfile', token]);
-                
-                setTimeout(() => {
-                    navigate('/'); 
-                    window.scrollTo(0, 0); 
-                }, 1500); 
-                
-            } else {
-                toast.error(data.message || "Cập nhật thất bại.");
+            if (!data.success) {
+                toast.error(data.message || 'Cập nhật thất bại.');
+                return;
             }
+
+            toast.success(data.message || 'Cập nhật hồ sơ thành công!');
+            queryClient.invalidateQueries(['userProfile', token]);
+
+            setTimeout(() => {
+                navigate('/');
+                window.scrollTo(0, 0);
+            }, 1500);
         },
-        onError: (error) => {
-            toast.error("Đã xảy ra lỗi khi cập nhật.");
+        onError: () => {
+            toast.error('Đã xảy ra lỗi khi cập nhật.');
         }
     });
 
-    // --- ĐÃ SỬA LỖI Ở ĐÂY ---
     const handleSubmit = (e) => {
         e.preventDefault();
+
         const formDataToSubmit = new FormData();
-        Object.keys(formData).forEach(key => {
+        Object.keys(formData).forEach((key) => {
             formDataToSubmit.append(key, formData[key]);
         });
+
         if (avatarFile) {
             formDataToSubmit.append('avatar', avatarFile);
         }
-        // Sửa 'formDataToSumbit' thành 'formDataToSubmit'
-        updateProfileMutation.mutate(formDataToSubmit); 
+
+        updateProfileMutation.mutate(formDataToSubmit);
     };
-    // ------------------------
+
+    const getAvatarSrc = (avatar) => {
+        if (!avatar) return '';
+        if (/^(https?:)?\/\//i.test(avatar) || avatar.startsWith('data:')) {
+            return avatar;
+        }
+        return `${url}/images/${avatar}`;
+    };
 
     if (!user) {
         return (
@@ -113,19 +128,25 @@ const Profile = () => {
     let avatarToShow;
     if (avatarPreview) {
         avatarToShow = <img src={avatarPreview} alt="Xem trước" className="profile-avatar-image" />;
-    } else if (user.avatar) {
-        avatarToShow = <img src={`${url}/images/${user.avatar}`} alt="Avatar" className="profile-avatar-image" />;
+    } else if (user.avatar && !avatarLoadError) {
+        avatarToShow = (
+            <img
+                src={getAvatarSrc(user.avatar)}
+                alt="Avatar"
+                className="profile-avatar-image"
+                onError={() => setAvatarLoadError(true)}
+            />
+        );
     } else {
         avatarToShow = (
             <div className="avatar-placeholder">
-                <img src={assets.profile_icon_large || assets.profile_icon} alt="Avatar" />
+                <img src={assets.profile_icon} alt="Avatar" />
             </div>
         );
     }
 
     return (
         <div className="profile-page">
-            
             <div className="profile-avatar-section">
                 <div className="avatar-wrapper">
                     {avatarToShow}
@@ -137,10 +158,7 @@ const Profile = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="profile-form">
-                
                 <div className="profile-form-columns">
-
-                    {/* CỘT TRÁI: THÔNG TIN CÁ NHÂN */}
                     <div className="profile-form-column">
                         <h2 className="profile-title section-title">Thông tin cá nhân</h2>
                         <div className="form-group">
@@ -157,33 +175,27 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    {/* CỘT PHẢI: ĐỊA CHỈ */}
                     <div className="profile-form-column">
-                        <h2 className="profile-title section-title">Địa chỉ Giao hàng</h2>
-                        
+                        <h2 className="profile-title section-title">Địa chỉ giao hàng</h2>
                         <div className="form-group">
                             <label htmlFor="country">Quốc gia</label>
                             <input type="text" id="country" name="country" value={formData.country} onChange={handleChange} />
                         </div>
-                        
                         <div className="form-group">
                             <label htmlFor="province">Tỉnh/Thành phố</label>
                             <input type="text" id="province" name="province" value={formData.province} onChange={handleChange} />
                         </div>
-                        
                         <div className="form-group">
                             <label htmlFor="ward">Xã/Phường</label>
                             <input type="text" id="ward" name="ward" value={formData.ward} onChange={handleChange} />
                         </div>
-                        
                         <div className="form-group">
                             <label htmlFor="street">Địa chỉ (Số nhà, Tên đường)</label>
                             <input type="text" id="street" name="street" value={formData.street} onChange={handleChange} />
                         </div>
                     </div>
                 </div>
-                
-                {/* NÚT BẤM */}
+
                 <div className="form-actions">
                     <button type="submit" className="save-btn" disabled={updateProfileMutation.isPending}>
                         {updateProfileMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}

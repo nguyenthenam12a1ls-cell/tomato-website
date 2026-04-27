@@ -111,7 +111,7 @@ const Dashboard = () => {
         
         if (res.data.success) setChartData(res.data.data);
         else toast.error(res.data.message);
-    } catch (error) {
+    } catch {
         toast.error("Lỗi API (biểu đồ)");
     }
   };

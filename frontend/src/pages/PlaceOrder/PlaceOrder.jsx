@@ -62,7 +62,7 @@ const PlaceOrder = () => {
       } else {
         toast.error(response.data.message || "Không thể tạo đơn hàng");
       }
-    } catch (error) {
+    } catch {
         toast.error("Lỗi server, không thể đặt hàng");
     }
   };

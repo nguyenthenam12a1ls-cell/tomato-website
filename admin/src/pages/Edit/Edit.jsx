@@ -39,7 +39,7 @@ const Edit = () => { // Xóa prop {url}
         } else {
           toast.error("Không thể tải dữ liệu món ăn");
         }
-      } catch (error) {
+      } catch {
         toast.error("Lỗi API khi tải dữ liệu");
       }
     };
@@ -80,7 +80,7 @@ const Edit = () => { // Xóa prop {url}
       } else {
         toast.error(response.data.message);
       }
-    } catch (error) {
+    } catch {
       toast.error("Lỗi API khi cập nhật");
     }
   };

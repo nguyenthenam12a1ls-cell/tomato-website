@@ -33,7 +33,7 @@ const ResetPassword = () => {
             } else {
                 toast.error(response.data.message); // Hiển thị lỗi (vd: token hết hạn)
             }
-        } catch (error) {
+        } catch {
             toast.error("Đã xảy ra lỗi. Vui lòng thử lại.");
         }
         setIsLoading(false);

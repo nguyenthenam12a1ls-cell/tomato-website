@@ -16,7 +16,7 @@ const ForgotPassword = () => {
         try {
             const response = await axios.post(url + "/api/user/forgot-password", { email });
             toast.success(response.data.message);
-        } catch (error) {
+        } catch {
             toast.error("Đã xảy ra lỗi. Vui lòng thử lại.");
         }
         setIsLoading(false);

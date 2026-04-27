@@ -1,26 +1,34 @@
-import foodModel from "../models/foodModel.js";
-
 import fs from "fs"
 
 import path from 'path';
+
+import { prisma } from "../config/prisma.js";
+
+
 // add food item 
 
 const addFood = async (req, res) => {
-    let image_filename = `${req.file.filename}`;
-
-    const food = new foodModel({
-        name: req.body.name,
-        description: req.body.description,
-        price: req.body.price,
-        category: req.body.category,
-        image: image_filename
-    })
     try {
-        await food.save();
-        res.json({ success: true, message: "Food Added" });
-    } catch (error) {
-        console.log(error);;
-        res.json({ success: false, message: "Error" });
+        const image_filename = req.file?.filename;
+
+        if(!image_filename){
+            return res.json({success:false, message: "Ảnh là bắt buộc"});
+        }
+
+        await prisma.food.create({
+            data: {
+                name: req.body.name,
+                description: req.body.description,
+                price: Number(req.body.price),
+                category: req.body.category,
+                image: image_filename
+            }
+        });
+
+        res.json({success: true, message: "Thêm món ăn thành công"});
+    } catch(error){
+        console.log(error);
+        res.json({success:false, message: "Lỗi"});
     }
 }
 
@@ -28,8 +36,10 @@ const addFood = async (req, res) => {
 
 const listFood = async (req, res) => {
     try {
-        const foods = await foodModel.find({});
-        res.json({ success: true, data: foods })
+        const foods = await prisma.food.findMany({
+            orderBy: {id: "desc"}
+        });
+        res.json({success: true, data: foods});
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Error" });
@@ -40,28 +50,51 @@ const listFood = async (req, res) => {
 
 const removeFood = async (req, res) => {
     try {
-        const food = await foodModel.findById(req.body.id);
-        fs.unlink(`uploads/${food.image}`, () => { })
+        const foodId = Number(req.body.id);
 
-        await foodModel.findByIdAndDelete(req.body.id);
+        if (Number.isNaN(foodId)) {
+            return res.json({ success: false, message: "Invalid food id" });
+        }
+
+        const food = await prisma.food.findUnique({
+            where: { id: foodId }
+        });
+
+        if (!food) {
+            return res.json({ success: false, message: "Food not found" });
+        }
+
+        fs.unlink(`uploads/${food.image}`, () => {});
+
+        await prisma.food.delete({
+            where: { id: foodId }
+        });
+
         res.json({ success: true, message: "Food Removed" });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" })
+        res.json({ success: false, message: "Error" });
     }
-}
+};
+
 
 // lấy món ăn bằng ID 
 
 const getFoodById = async (req, res) => {
     try {
-        const foodId = req.params.foodId;
-        const food = await foodModel.findById(foodId);
+        const foodId = Number(req.params.foodId);
 
-        if (!food) {
-            return res.json({ success: false, message: "Không tìm thấy món ăn" });
+        if(Number.isNaN(foodId)){
+            return res.json({success:false, message:"ID món ăn không hợp lệ"});
         }
 
+        const food = await prisma.food.findUnique({
+            where: {id: foodId}
+        });
+
+        if(!food){
+            return res.json({success: false, message: "Không tìm thấy món ăn"})
+        }
         res.json({ success: true, data: food });
     } catch (error) {
         console.log(error);
@@ -74,48 +107,51 @@ const getFoodById = async (req, res) => {
 // update food 
 const updateFood = async (req, res) => {
     try {
-        const foodId = req.body.id;
+        const foodId = Number(req.body.id);
 
-        const food = await foodModel.findById(foodId);
+        if (Number.isNaN(foodId)) {
+            return res.json({ success: false, message: "Invalid food id" });
+        }
+
+        const food = await prisma.food.findUnique({
+            where: { id: foodId }
+        });
 
         if (!food) {
             return res.json({ success: false, message: "Không tìm thấy món ăn" });
         }
 
-        let imageFilename = food.image; // Mặc định giữ ảnh cũ
+        let imageFilename = food.image;
 
-        // Nếu có ảnh mới thì mới xử lý ảnh
         if (req.file) {
-            // xóa ảnh cũ
             const oldImagePath = path.join("uploads", food.image);
             try {
                 if (fs.existsSync(oldImagePath)) {
                     fs.unlinkSync(oldImagePath);
                 }
             } catch (err) {
-                console.error("Lỗi khi xóa ảnh cũ: ", err);
+                console.error("Lỗi khi xóa ảnh cũ:", err);
             }
-            // lấy tên file ảnh mới
+
             imageFilename = req.file.filename;
         }
 
-        // === SỬA LỖI LOGIC ===
-        // Luôn luôn cập nhật DB (dù có ảnh mới hay không)
-        // và di chuyển logic này ra ngoài khối 'if'
-        await foodModel.findByIdAndUpdate(foodId, {
-            name: req.body.name,
-            description: req.body.description,
-            price: req.body.price,
-            category: req.body.category,
-            image: imageFilename // Cập nhật tên ảnh (mới hoặc cũ)
+        await prisma.food.update({
+            where: { id: foodId },
+            data: {
+                name: req.body.name,
+                description: req.body.description,
+                price: Number(req.body.price),
+                category: req.body.category,
+                image: imageFilename
+            }
         });
 
-        // Luôn luôn trả về response (di chuyển ra ngoài khối 'if')
-        res.json({success:true, message: "Cập nhật món ăn thành công"});
-
+        res.json({ success: true, message: "Cập nhật món ăn thành công" });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Lỗi Server" });
     }
 };
+
 export { addFood, listFood, removeFood , getFoodById, updateFood} 

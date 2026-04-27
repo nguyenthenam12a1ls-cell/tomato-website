@@ -1,4 +1,4 @@
-import React , { useState, lazy, Suspense, useContext, useEffect } from 'react'
+import React , { useState, lazy, Suspense, useEffect } from 'react'
 import Navbar from './pages/Navbar/Navbar';
 import { Route, Routes, useSearchParams } from 'react-router-dom';
 import Home from './pages/Home/Home'

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './Chatbot.css';
 import { assets } from '../../assets/assets';
 import { faqData } from './faqData.js'; // Import "bộ não"
@@ -73,7 +73,7 @@ const Chatbot = () => {
             {/* Nút bong bóng chat */}
             <div className="chatbot-bubble" onClick={toggleChat}>
                 {/* (Bạn cần thêm chat_icon vào assets.js nhé) */}
-                <img src="/src/assets/chat.png" alt="" /> 
+                <img src={assets.chat_icon} alt="Chat" /> 
             </div>
         </div>
     );

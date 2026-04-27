@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import './LoginPopup.css'
 import {assets} from '../../assets/assets'
 import { useAuth } from '../../Context/AuthContext'
@@ -56,7 +56,7 @@ const LoginPopup = ({setShowLogin}) => {
                 </div>
 
                 <button type="button" className="login-popup-google-btn" onClick={googleAuth}>
-                    <img src="/src/assets/google_icon.png" alt="Google" /> 
+                    <img src={assets.google_icon} alt="Google" /> 
                     Tiếp tục với Google
                 </button>
 

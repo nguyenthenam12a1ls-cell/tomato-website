@@ -4,7 +4,7 @@ import axios from "axios"
 import {toast} from "react-toastify"
 import { Link } from 'react-router-dom'
 import { StoreContext } from '../../context/StoreContext' 
-import { assets } from '../../assets/assets' // 1. Import assets
+import { assets } from '../../assets/assets'
 
 const List = () => { 
 
@@ -60,9 +60,9 @@ const List = () => {
                 {/* 4. NÂNG CẤP ICON ACTION */}
                 <div className="action-icons">
                   <Link to={`/edit/${item._id}`}>
-                    <img className='action-icon' src="/src/assets/edit_icon.png" alt="Edit" />
+                    <img className='action-icon' src={assets.edit_icon} alt="Edit" />
                   </Link>
-                  <img onClick={()=>removeFood(item._id)} className='action-icon' src="/src/assets/close_icon.png" alt="Delete" />
+                  <img onClick={()=>removeFood(item._id)} className='action-icon' src={assets.close_icon} alt="Delete" />
                 </div>
               </div>
             )
