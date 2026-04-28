@@ -1,81 +1,76 @@
-# Food Delivery Platform
+# Tomato Food Delivery Platform
 
-Full-stack food ordering platform with:
+Modern food ordering platform with a customer app, admin dashboard, and Express API backed by Prisma and PostgreSQL.
 
-- `frontend`: customer-facing React app
-- `admin`: React admin dashboard
-- `backend`: Express API using Prisma with PostgreSQL
+## Overview
+
+This repository contains three applications:
+
+- `frontend` for the customer-facing ordering experience
+- `admin` for internal food, order, and dashboard management
+- `backend` for authentication, cart, order, payment, and data access APIs
+
+The backend is being standardized around `Prisma + PostgreSQL` as the primary data layer.
 
 ## Tech Stack
 
-### Frontend
-- React 19
-- Vite
-- React Router
-- Axios
-- React Query
-- React Toastify
+| Layer | Stack |
+| --- | --- |
+| Frontend | React 19, Vite, React Router, Axios, React Query, React Toastify |
+| Admin | React 19, Vite, Axios, Chart.js, React Toastify |
+| Backend | Node.js, Express, Prisma ORM, PostgreSQL, JWT, Passport, Multer, Nodemailer |
+| Payments | Stripe, VNPay |
 
-### Admin
-- React 19
-- Vite
-- Axios
-- Chart.js
-- React Toastify
+## Core Features
 
-### Backend
-- Node.js
-- Express
-- Prisma ORM
-- PostgreSQL
-- JWT authentication
-- Passport Google OAuth
-- Multer
-- Nodemailer
-- Stripe
-- VNPay
+- Email/password authentication
+- Google OAuth login
+- Password reset by email
+- User profile management
+- Food catalog management
+- Cart with quantity tracking
+- Order creation and payment verification
+- Admin dashboard with order and revenue views
 
-## Current Architecture
+## Architecture Notes
 
-The project is being migrated from MongoDB/Mongoose to Prisma + PostgreSQL.
+The project was originally structured around MongoDB-style response shapes. During the PostgreSQL migration, some backend endpoints still return compatibility fields such as:
 
-Current backend direction:
+- `_id`
+- `address`
+- `items`
 
-- user auth and profile logic use Prisma
-- Google OAuth uses Prisma
-- cart logic uses `Cart` and `CartItem`
-- order logic uses `Order` and `OrderItem`
-- Prisma schema and migrations live in `backend/prisma`
+This is intentional so the frontend and admin apps can continue to work while the backend migration is completed.
 
-## Project Structure
+## Repository Structure
 
 ```text
 tomato-website/
-├── backend/
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── prisma/
-│   │   ├── migrations/
-│   │   └── schema.prisma
-│   ├── routes/
-│   ├── uploads/
-│   ├── utils/
-│   ├── server.js
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   └── package.json
-└── admin/
-    ├── src/
-    ├── public/
-    └── package.json
+|-- backend/
+|   |-- config/
+|   |-- controllers/
+|   |-- middleware/
+|   |-- prisma/
+|   |   |-- migrations/
+|   |   `-- schema.prisma
+|   |-- routes/
+|   |-- uploads/
+|   |-- utils/
+|   |-- server.js
+|   `-- package.json
+|-- frontend/
+|   |-- public/
+|   |-- src/
+|   `-- package.json
+`-- admin/
+    |-- public/
+    |-- src/
+    `-- package.json
 ```
 
-## Backend Data Model
+## Data Model
 
-Main Prisma models:
+Current main Prisma models:
 
 - `User`
 - `Food`
@@ -84,7 +79,11 @@ Main Prisma models:
 - `Order`
 - `OrderItem`
 
-## Environment Variables
+Schema source:
+
+- [backend/prisma/schema.prisma](backend/prisma/schema.prisma)
+
+## Environment Setup
 
 Create `backend/.env` with values similar to:
 
@@ -113,7 +112,7 @@ VNP_HASHSECRET=your_vnpay_hash_secret
 VNP_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
 ```
 
-## Installation
+## Getting Started
 
 ### 1. Install dependencies
 
@@ -138,20 +137,23 @@ cd admin
 npm install
 ```
 
-### 2. Run Prisma migrations
+### 2. Apply Prisma migrations
+
+Production-style migration:
 
 ```bash
 cd backend
 npx prisma migrate deploy
 ```
 
-For local development, if needed:
+Local development migration:
 
 ```bash
+cd backend
 npx prisma migrate dev
 ```
 
-### 3. Start the apps
+### 3. Start the applications
 
 Backend:
 
@@ -174,9 +176,10 @@ cd admin
 npm run dev
 ```
 
-## Main API Routes
+## API Summary
 
 ### User
+
 - `POST /api/user/register`
 - `POST /api/user/login`
 - `POST /api/user/logout`
@@ -189,6 +192,7 @@ npm run dev
 - `POST /api/user/reset-password/:token`
 
 ### Food
+
 - `GET /api/food/list`
 - `GET /api/food/get/:foodId`
 - `POST /api/food/add`
@@ -196,11 +200,13 @@ npm run dev
 - `POST /api/food/remove`
 
 ### Cart
+
 - `POST /api/cart/add`
 - `POST /api/cart/remove`
 - `POST /api/cart/get`
 
 ### Order
+
 - `POST /api/order/place`
 - `POST /api/order/verify`
 - `GET /api/order/vnpay_return`
@@ -213,8 +219,23 @@ npm run dev
 - `GET /api/order/quarterly`
 - `GET /api/order/yearly`
 
-## Notes
+## Current Backend Status
 
-- The README now reflects the selected stack: `Express + Prisma + PostgreSQL`.
-- Some frontend/admin parts may still use compatibility response shapes such as `_id`, `address`, and `items`.
-- If you continue the migration, update README again after frontend is fully aligned with Prisma-based responses.
+Backend migration already applied in key areas:
+
+- `server.js` no longer initializes MongoDB
+- `userController.js` uses Prisma
+- `passport.js` uses Prisma
+- `cartController.js` uses `Cart` and `CartItem`
+- `orderController.js` uses `Order` and `OrderItem`
+
+## Development Notes
+
+- If an endpoint still returns `_id`, that is currently a compatibility layer for the frontend and admin apps.
+- If you continue the migration, update the frontend and admin apps after backend response contracts are fully stabilized.
+- If you change the Prisma schema, re-run migrations before testing related routes.
+
+## Author
+
+- GitHub: https://github.com/nguyenthenam12a1ls-cell
+- Email: kiritonguyen1411lh@gmail.com
