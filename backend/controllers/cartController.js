@@ -1,70 +1,154 @@
-import userModel from "../models/userModel.js";
+import { prisma } from '../config/prisma.js';
 
-// add items to user cart 
-const addToCart = async(req,res) => {
+const getOrCreateCart = async (userId) => {
+    const numericUserId = Number(userId);
+
+    let cart = await prisma.cart.findUnique({
+        where: { userId: numericUserId },
+        include: { items: true }
+    });
+
+    if (!cart) {
+        cart = await prisma.cart.create({
+            data: { userId: numericUserId },
+            include: { items: true }
+        });
+    }
+
+    return cart;
+};
+
+// add items to user cart
+const addToCart = async (req, res) => {
     try {
-        // SỬA: Đọc từ req.userId (do auth.js cung cấp)
-        let userData = await userModel.findById(req.userId); 
-        
+        const userId = Number(req.userId);
+        const foodId = Number(req.body.itemId);
+
+        if (Number.isNaN(userId) || Number.isNaN(foodId)) {
+            return res.json({ success: false, message: "ID không hợp lệ" });
+        }
+
+        const userData = await prisma.user.findUnique({
+            where: { id: userId }
+        });
+
         if (!userData) {
             return res.json({ success: false, message: "Không tìm thấy user" });
         }
 
-        let cartData = await userData.cartData;
-        if(!cartData[req.body.itemId]){
-            cartData[req.body.itemId] = 1;
+        const cart = await getOrCreateCart(userId);
+
+        const existingItem = await prisma.cartItem.findUnique({
+            where: {
+                cartId_foodId: {
+                    cartId: cart.id,
+                    foodId
+                }
+            }
+        });
+
+        if (existingItem) {
+            await prisma.cartItem.update({
+                where: { id: existingItem.id },
+                data: { quantity: existingItem.quantity + 1 }
+            });
         } else {
-            cartData[req.body.itemId] += 1;
+            await prisma.cartItem.create({
+                data: {
+                    cartId: cart.id,
+                    foodId,
+                    quantity: 1
+                }
+            });
         }
-        
-        // SỬA: Dùng req.userId để cập nhật
-        await userModel.findByIdAndUpdate(req.userId,{cartData}); 
-        res.json({success:true, message:"Added To Cart"});
-    } catch(error){
-        console.log(error);
-        res.json({success:false,message:"Error"});
-    }
-}
 
-// remove items from user cart 
-const removeFromCart = async(req,res) => {
+        res.json({ success: true, message: "Đã thêm vào giỏ hàng" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Lỗi thêm vào giỏ hàng" });
+    }
+};
+
+// remove items from user cart
+const removeFromCart = async (req, res) => {
     try {
-        // SỬA: Đọc từ req.userId
-        let userData = await userModel.findById(req.userId); 
-        
+        const userId = Number(req.userId);
+        const foodId = Number(req.body.itemId);
+
+        if (Number.isNaN(userId) || Number.isNaN(foodId)) {
+            return res.json({ success: false, message: "ID không hợp lệ" });
+        }
+
+        const userData = await prisma.user.findUnique({
+            where: { id: userId }
+        });
+
         if (!userData) {
             return res.json({ success: false, message: "Không tìm thấy user" });
         }
 
-        let cartData = await userData.cartData;
-        if(cartData[req.body.itemId] > 0){
-            cartData[req.body.itemId] -= 1;
-        }
-        
-        // SỬA: Dùng req.userId để cập nhật
-        await userModel.findByIdAndUpdate(req.userId,{cartData}); 
-        res.json({success:true,message:"Removed From Cart"});
-    } catch(error) {
-        console.log(error);
-        res.json({success:false,message:"Error"});
-    }
-}
+        const cart = await getOrCreateCart(userId);
 
-// fetch user cart data 
-const getCart = async(req,res) => {
+        const existingItem = await prisma.cartItem.findUnique({
+            where: {
+                cartId_foodId: {
+                    cartId: cart.id,
+                    foodId
+                }
+            }
+        });
+
+        if (!existingItem) {
+            return res.json({ success: true, message: "Giỏ hàng đã được cập nhật" });
+        }
+
+        if (existingItem.quantity > 1) {
+            await prisma.cartItem.update({
+                where: { id: existingItem.id },
+                data: { quantity: existingItem.quantity - 1 }
+            });
+        } else {
+            await prisma.cartItem.delete({
+                where: { id: existingItem.id }
+            });
+        }
+
+        res.json({ success: true, message: "Đã xóa món ăn khỏi giỏ hàng" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Lỗi xóa khỏi giỏ hàng" });
+    }
+};
+
+// fetch user cart data
+const getCart = async (req, res) => {
     try {
-        // SỬA: Đọc từ req.userId
-        let userData = await userModel.findById(req.userId); 
-        
+        const userId = Number(req.userId);
+
+        if (Number.isNaN(userId)) {
+            return res.json({ success: false, message: "ID không hợp lệ" });
+        }
+
+        const userData = await prisma.user.findUnique({
+            where: { id: userId }
+        });
+
         if (!userData) {
             return res.json({ success: false, message: "Không tìm thấy user" });
         }
 
-        let cartData = await userData.cartData;
-        res.json({success:true,cartData});
-    } catch(error){
+        const cart = await getOrCreateCart(userId);
+        const cartData = {};
+
+        for (const item of cart.items) {
+            cartData[String(item.foodId)] = item.quantity;
+        }
+
+        res.json({ success: true, cartData });
+    } catch (error) {
         console.log(error);
-        res.json({success:false,message:"Error"});
+        res.json({ success: false, message: "Lỗi khi lấy dữ liệu giỏ hàng" });
     }
-}
-export {addToCart, removeFromCart, getCart}
+};
+
+export { addToCart, removeFromCart, getCart };

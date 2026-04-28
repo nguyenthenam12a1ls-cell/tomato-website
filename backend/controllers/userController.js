@@ -1,4 +1,4 @@
-import userModel from "../models/userModel.js";
+import { prisma } from '../config/prisma.js';
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt"
 import validator from "validator"
@@ -10,26 +10,33 @@ import { sendPasswordResetEmail } from '../utils/mailService.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// login user 
+// login user(đã xong)
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.json({ success: false, message: 'Email and password are required' });
+        return res.json({ success: false, message: 'Cần nhập thông tin và mật khẩu' });
     }
     try {
-        const user = await userModel.findOne({ email });
+        const user = await prisma.user.findUnique({
+            where: { email }
+        });
+
         if (!user) {
-            return res.json({ success: false, message: "User Doesn't exists" });
+            return res.json({ success: false, message: "Người dùng không tồn tại" });
         }
         if (user.password) {
             const isMatch = await bcrypt.compare(password, user.password);
+
             if (!isMatch) {
-                return res.json({ success: false, message: "Invalid credentials" });
+                return res.json({ success: false, message: "Thông tin đăng nhập không hợp lệ" });
             }
+
         } else {
             return res.json({ success: false, message: "Tài khoản này đăng nhập bằng Google." });
         }
-        const token = createToken(user._id);
+
+        const token = createToken(user.id);
+
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -39,7 +46,7 @@ const loginUser = async (req, res) => {
         return res.json({ success: true, token });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" });
+        res.json({ success: false, message: "Lỗi" });
     }
 }
 
@@ -51,31 +58,35 @@ const createToken = (id) => {
 const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
-        return res.json({ success: false, message: 'Missing Details' });
+        return res.json({ success: false, message: 'Thông tin đăng nhập không hợp lệ' });
     }
     try {
-        const exists = await userModel.findOne({ email });
+        const exists = await prisma.user.findUnique({
+            where: { email }
+        });
         if (exists) {
             if (exists.googleId) {
                 return res.json({ success: false, message: "Email này đã được đăng ký bằng Google." });
             }
-            return res.json({ success: false, message: "User already exists" });
+            return res.json({ success: false, message: "Người dùng đã tồn tại" });
         }
         if (!validator.isEmail(email)) {
-            return res.json({ success: false, message: "Please enter a valid email" });
+            return res.json({ success: false, message: "Vui lòng nhập email hợp lệ" });
         }
         if (password.length < 8) {
-            return res.json({ success: false, message: "Please enter a strong password" });
+            return res.json({ success: false, message: "Vui lòng nhập mật khẩu mạnh hơn" });
         }
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        const newUser = new userModel({
-            name: name,
-            email: email,
-            password: hashedPassword
+        const user = await prisma.user.create({
+            data: {
+                name,
+                email,
+                password: hashedPassword
+            }
         });
-        const user = await newUser.save();
-        const token = createToken(user._id);
+
+        const token = createToken(user.id);
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -85,7 +96,7 @@ const registerUser = async (req, res) => {
         res.json({ success: true, token });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" });
+        res.json({ success: false, message: "Lỗi khi đăng ký người dùng" });
     }
 }
 
@@ -97,21 +108,25 @@ const logoutUser = async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         });
-        return res.json({ success: true, message: "Logged Out" });
+        return res.json({ success: true, message: "Đã đăng xuất thành công" });
     } catch (error) {
         console.log(error);
-        return res.json({ success: false, message: "Error" });
+        return res.json({ success: false, message: "Lỗi khi đăng xuất" });
     }
 }
 
 // API lấy dữ liệu admin 
 const getAdminData = async (req, res) => {
     try {
-        const userId = req.userId; // (Code này đã đúng)
-        const user = await userModel.findById(userId);
+        const userId = req.userId;
+        const user = await prisma.user.findUnique({
+            where: { id: Number(userId) }
+        });
+
         if (!user) {
             return res.json({ success: false, message: "Không tìm thấy Admin" });
         }
+
         const adminData = {
             name: user.name,
             email: user.email
@@ -126,7 +141,12 @@ const getAdminData = async (req, res) => {
 // API lấy thông tin profile 
 const getProfile = async (req, res) => {
     try {
-        const user = await userModel.findById(req.userId); // SỬA Ở ĐÂY
+        const userId = req.userId;
+
+        const user = await prisma.user.findUnique({
+            where: { id: Number(userId) }
+        });
+
         if (!user) {
             return res.json({ success: false, message: "Không tìm thấy user" });
         }
@@ -153,7 +173,14 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
     try {
         const { name, phone, street, ward, province, country } = req.body;
-        const updateData = { name, phone, street, ward, province, country };
+        const updateData = {};
+
+        if (name !== undefined) updateData.name = name;
+        if (phone !== undefined) updateData.phone = phone;
+        if (street !== undefined) updateData.street = street;
+        if (ward !== undefined) updateData.ward = ward;
+        if (province !== undefined) updateData.province = province;
+        if (country !== undefined) updateData.country = country;
 
         if (req.file) {
             const newFileName = `${Date.now()}-${req.file.originalname}`;
@@ -166,7 +193,11 @@ const updateProfile = async (req, res) => {
             await fs.promises.writeFile(imagePath, req.file.buffer);
             updateData.avatar = newFileName;
         }
-        await userModel.findByIdAndUpdate(req.userId, updateData); // SỬA Ở ĐÂY
+        await prisma.user.update({
+            where: { id: Number(req.userId) },
+            data: updateData
+        });
+
         res.json({ success: true, message: "Đã cập nhật hồ sơ" });
     } catch (error) {
         console.log(error);
@@ -178,7 +209,7 @@ const updateProfile = async (req, res) => {
 const googleAuthCallback = (req, res) => {
     try {
         const user = req.user;
-        const token = createToken(user._id);
+        const token = createToken(user.id);
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         res.redirect(`${frontendUrl}?token=${token}`);
     } catch (error) {
@@ -192,7 +223,9 @@ const googleAuthCallback = (req, res) => {
 const forgotPassword = async (req, res) => {
     const { email } = req.body;
     try {
-        const user = await userModel.findOne({ email: email });
+        const user = await prisma.user.findUnique({
+            where: { email }
+        });
 
         if (!user) {
             return res.json({ success: true, message: "Nếu email tồn tại, link reset sẽ được gửi." });
@@ -202,7 +235,7 @@ const forgotPassword = async (req, res) => {
             return res.json({ success: false, message: "Tài khoản này đăng nhập bằng Google." });
         }
 
-        const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+        const resetToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '15m' });
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
 
@@ -224,11 +257,21 @@ const resetPassword = async (req, res) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.id;
+        const existingUser = await prisma.user.findUnique({
+            where: { id: Number(userId) }
+        });
+
+        if (!existingUser) {
+            return res.json({ success: false, message: "Người dùng không tồn tại." });
+        }
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        await userModel.findByIdAndUpdate(userId, { password: hashedPassword });
+        await prisma.user.update({
+            where: { id: Number(userId) },
+            data: { password: hashedPassword }
+        });
 
         res.json({ success: true, message: "Mật khẩu đã được cập nhật thành công." });
 
