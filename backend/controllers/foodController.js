@@ -1,18 +1,18 @@
-import fs from "fs"
-
-import path from 'path';
-
+import fs from "fs";
+import path from "path";
 import { prisma } from "../config/prisma.js";
 
-
-// add food item 
+const serializeFood = (food) => ({
+    ...food,
+    _id: String(food.id)
+});
 
 const addFood = async (req, res) => {
     try {
-        const image_filename = req.file?.filename;
+        const imageFilename = req.file?.filename;
 
-        if(!image_filename){
-            return res.json({success:false, message: "Ảnh là bắt buộc"});
+        if (!imageFilename) {
+            return res.json({ success: false, message: "Anh la bat buoc" });
         }
 
         await prisma.food.create({
@@ -21,32 +21,29 @@ const addFood = async (req, res) => {
                 description: req.body.description,
                 price: Number(req.body.price),
                 category: req.body.category,
-                image: image_filename
-            }
+                image: imageFilename,
+            },
         });
 
-        res.json({success: true, message: "Thêm món ăn thành công"});
-    } catch(error){
+        res.json({ success: true, message: "Them mon an thanh cong" });
+    } catch (error) {
         console.log(error);
-        res.json({success:false, message: "Lỗi"});
+        res.json({ success: false, message: "Loi" });
     }
-}
-
-// all food list
+};
 
 const listFood = async (req, res) => {
     try {
         const foods = await prisma.food.findMany({
-            orderBy: {id: "desc"}
+            orderBy: { id: "desc" },
         });
-        res.json({success: true, data: foods});
+
+        res.json({ success: true, data: foods.map(serializeFood) });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Error" });
     }
-}
-
-// remove food item 
+};
 
 const removeFood = async (req, res) => {
     try {
@@ -57,7 +54,7 @@ const removeFood = async (req, res) => {
         }
 
         const food = await prisma.food.findUnique({
-            where: { id: foodId }
+            where: { id: foodId },
         });
 
         if (!food) {
@@ -67,44 +64,39 @@ const removeFood = async (req, res) => {
         fs.unlink(`uploads/${food.image}`, () => {});
 
         await prisma.food.delete({
-            where: { id: foodId }
+            where: { id: foodId },
         });
 
-        res.json({ success: true, message: "Food Removed" });
+        res.json({ success: true, message: "Food removed" });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Error" });
     }
 };
 
-
-// lấy món ăn bằng ID 
-
 const getFoodById = async (req, res) => {
     try {
         const foodId = Number(req.params.foodId);
 
-        if(Number.isNaN(foodId)){
-            return res.json({success:false, message:"ID món ăn không hợp lệ"});
+        if (Number.isNaN(foodId)) {
+            return res.json({ success: false, message: "ID mon an khong hop le" });
         }
 
         const food = await prisma.food.findUnique({
-            where: {id: foodId}
+            where: { id: foodId },
         });
 
-        if(!food){
-            return res.json({success: false, message: "Không tìm thấy món ăn"})
+        if (!food) {
+            return res.json({ success: false, message: "Khong tim thay mon an" });
         }
-        res.json({ success: true, data: food });
+
+        res.json({ success: true, data: serializeFood(food) });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Lỗi Server " });
+        res.json({ success: false, message: "Loi server" });
     }
-}
+};
 
-// update food 
-
-// update food 
 const updateFood = async (req, res) => {
     try {
         const foodId = Number(req.body.id);
@@ -114,23 +106,24 @@ const updateFood = async (req, res) => {
         }
 
         const food = await prisma.food.findUnique({
-            where: { id: foodId }
+            where: { id: foodId },
         });
 
         if (!food) {
-            return res.json({ success: false, message: "Không tìm thấy món ăn" });
+            return res.json({ success: false, message: "Khong tim thay mon an" });
         }
 
         let imageFilename = food.image;
 
         if (req.file) {
             const oldImagePath = path.join("uploads", food.image);
+
             try {
                 if (fs.existsSync(oldImagePath)) {
                     fs.unlinkSync(oldImagePath);
                 }
-            } catch (err) {
-                console.error("Lỗi khi xóa ảnh cũ:", err);
+            } catch (error) {
+                console.error("Loi khi xoa anh cu:", error);
             }
 
             imageFilename = req.file.filename;
@@ -143,15 +136,15 @@ const updateFood = async (req, res) => {
                 description: req.body.description,
                 price: Number(req.body.price),
                 category: req.body.category,
-                image: imageFilename
-            }
+                image: imageFilename,
+            },
         });
 
-        res.json({ success: true, message: "Cập nhật món ăn thành công" });
+        res.json({ success: true, message: "Cap nhat mon an thanh cong" });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Lỗi Server" });
+        res.json({ success: false, message: "Loi server" });
     }
 };
 
-export { addFood, listFood, removeFood , getFoodById, updateFood} 
+export { addFood, listFood, removeFood, getFoodById, updateFood };

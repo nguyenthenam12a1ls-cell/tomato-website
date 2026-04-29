@@ -113,6 +113,13 @@ const placeOrder = async (req, res) => {
             currency = "vnd";
         }
 
+        if (!["stripe", "vnpay"].includes(paymentMethod)) {
+            return res.json({
+                success: false,
+                message: "Phương thức thanh toán không hợp lệ",
+            });
+        }
+
         const newOrder = await prisma.order.create({
             data: {
                 userId,
@@ -131,7 +138,7 @@ const placeOrder = async (req, res) => {
                 phone: address.phone || "",
                 items: {
                     create: items.map((item) => ({
-                        foodId: item._id ? Number(item._id) : null,
+                        foodId: item._id ? Number(item._id) : item.id ? Number(item.id) : null,
                         foodName: item.name,
                         foodPrice: Number(item.price),
                         quantity: Number(item.quantity),
@@ -195,11 +202,6 @@ const placeOrder = async (req, res) => {
                 currency: "VND",
             });
         }
-
-        return res.json({
-            success: false,
-            message: "Phương thức thanh toán không hợp lệ",
-        });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Lỗi Server" });

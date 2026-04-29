@@ -1,15 +1,4 @@
-import mongoose from 'mongoose';
-import Food from './models/foodModel.js';
-
-
-connectDB();
-
-then(() => console.log('✅ Connected to MongoDB'))
-.catch(err => {
-  console.log('❌ Connection Error:', err);
-  process.exit(1);
-});
-
+import { prisma } from "./config/prisma.js";
 
 const foodData = [
   {
@@ -238,43 +227,41 @@ const foodData = [
   }
 ];
 
-// Hàm thêm dữ liệu vào database
 async function seedDatabase() {
   try {
-    // Xóa tất cả dữ liệu cũ
-    await Food.deleteMany({});
-    console.log('🗑️  Đã xóa dữ liệu cũ');
+    await prisma.food.deleteMany();
+    console.log("Deleted old food data");
 
-    // Thêm dữ liệu mới
-    const result = await Food.insertMany(foodData);
-    console.log(`✅ Đã thêm ${result.length} món ăn vào database`);
+    await prisma.food.createMany({
+      data: foodData
+    });
 
-    // Hiển thị danh sách món ăn theo category
-    console.log('\n📋 Danh sách món ăn đã thêm:\n');
-    
-    const categories = ['Salad', 'Rolls', 'Deserts', 'Sandwich', 'Cake', 'Pure Veg', 'Pasta', 'Noodles'];
-    
+    const result = await prisma.food.findMany({
+      orderBy: { id: "asc" }
+    });
+
+    console.log(`Added ${result.length} food items to PostgreSQL`);
+    console.log("\nFood list seeded:\n");
+
+    const categories = ["Salad", "Rolls", "Deserts", "Sandwich", "Cake", "Pure Veg", "Pasta", "Noodles"];
+
     for (const category of categories) {
-      const items = result.filter(item => item.category === category);
-      console.log(`${category} (${items.length} món):`);
-      items.forEach(item => {
-        console.log(`  ✓ ${item.name} - $${item.price}`);
+      const items = result.filter((item) => item.category === category);
+      console.log(`${category} (${items.length} items):`);
+      items.forEach((item) => {
+        console.log(`  - ${item.name} - $${item.price}`);
       });
-      console.log('');
+      console.log("");
     }
 
-    console.log('🎉 Hoàn thành! Bạn có thể kiểm tra bằng cách:');
-    console.log('   GET http://localhost:4000/api/food/list');
-    
+    console.log("Seed complete");
+    console.log("Check with: GET http://localhost:4000/api/food/list");
   } catch (error) {
-    console.error('❌ Lỗi khi thêm dữ liệu:', error);
+    console.error("Seed error:", error);
   } finally {
-    // Đóng kết nối
-    await mongoose.connection.close();
-    console.log('\n🔌 Đã đóng kết nối MongoDB');
+    await prisma.$disconnect();
     process.exit(0);
   }
 }
 
-// Chạy hàm seed
 seedDatabase();

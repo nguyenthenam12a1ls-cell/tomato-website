@@ -10,7 +10,17 @@ This repository contains three applications:
 - `admin` for internal food, order, and dashboard management
 - `backend` for authentication, cart, order, payment, and data access APIs
 
-The backend is being standardized around `Prisma + PostgreSQL` as the primary data layer.
+The backend now uses `Prisma + PostgreSQL` as the primary data layer.
+
+## Architecture Notes
+
+The project was originally structured around MongoDB-style response shapes. During the PostgreSQL migration, some backend endpoints still return compatibility fields such as:
+
+- `_id`
+- `address`
+- `items`
+
+This is intentional so the frontend and admin apps can continue to work while the backend migration is completed.
 
 ## Tech Stack
 
@@ -31,16 +41,6 @@ The backend is being standardized around `Prisma + PostgreSQL` as the primary da
 - Cart with quantity tracking
 - Order creation and payment verification
 - Admin dashboard with order and revenue views
-
-## Architecture Notes
-
-The project was originally structured around MongoDB-style response shapes. During the PostgreSQL migration, some backend endpoints still return compatibility fields such as:
-
-- `_id`
-- `address`
-- `items`
-
-This is intentional so the frontend and admin apps can continue to work while the backend migration is completed.
 
 ## Repository Structure
 
@@ -221,7 +221,7 @@ npm run dev
 
 ## Current Backend Status
 
-Backend migration already applied in key areas:
+Backend migration is now applied in the main runtime path:
 
 - `server.js` no longer initializes MongoDB
 - `userController.js` uses Prisma
@@ -231,8 +231,6 @@ Backend migration already applied in key areas:
 
 ## Development Notes
 
-- If an endpoint still returns `_id`, that is currently a compatibility layer for the frontend and admin apps.
-- If you continue the migration, update the frontend and admin apps after backend response contracts are fully stabilized.
 - If you change the Prisma schema, re-run migrations before testing related routes.
 
 ## Author
