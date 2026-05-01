@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-    const { user, token, url } = useAuth();
+    const { user, token, url, isUserLoading, isUserError, userError } = useAuth();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
 
@@ -37,7 +37,7 @@ const Profile = () => {
             street: user.street || '',
             ward: user.ward || '',
             province: user.province || '',
-            country: user.country || 'Vietnam',
+            country: user.country || 'Việt Nam',
         });
         setAvatarFile(null);
         setAvatarPreview(null);
@@ -81,7 +81,7 @@ const Profile = () => {
             }
 
             toast.success(data.message || 'Cập nhật hồ sơ thành công!');
-            queryClient.invalidateQueries(['userProfile', token]);
+            queryClient.invalidateQueries({ queryKey: ['userProfile', token] });
 
             setTimeout(() => {
                 navigate('/');
@@ -116,11 +116,27 @@ const Profile = () => {
         return `${url}/images/${avatar}`;
     };
 
-    if (!user) {
+    if (isUserLoading) {
         return (
             <div className="profile-page-loading">
                 <div className="spinner"></div>
                 <p>Đang tải thông tin hồ sơ...</p>
+            </div>
+        );
+    }
+
+    if (isUserError) {
+        return (
+            <div className="profile-page-loading">
+                <p>{userError?.message || 'Không thể tải thông tin hồ sơ.'}</p>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="profile-page-loading">
+                <p>Không có dữ liệu hồ sơ.</p>
             </div>
         );
     }

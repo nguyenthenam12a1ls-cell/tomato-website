@@ -3,8 +3,7 @@ import path from "path";
 import { prisma } from "../config/prisma.js";
 
 const serializeFood = (food) => ({
-    ...food,
-    _id: String(food.id)
+    ...food
 });
 
 const addFood = async (req, res) => {

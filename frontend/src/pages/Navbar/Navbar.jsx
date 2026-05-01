@@ -11,7 +11,7 @@ const Navbar = ({ setShowLogin }) => {
     const [avatarLoadError, setAvatarLoadError] = useState(false);
 
     const { totalAmount, setSearchTerm } = useContext(CartContext);
-    const { token, logout, user, url } = useAuth();
+    const { token, logout, user, url, isUserLoading, isUserError } = useAuth();
     const navigate = useNavigate();
     const profileRef = useRef(null);
 
@@ -71,7 +71,7 @@ const Navbar = ({ setShowLogin }) => {
                 </div>
 
                 {!token ? (
-                    <button onClick={() => setShowLogin(true)}>Sign Up</button>
+                    <button onClick={() => setShowLogin(true)}>Đăng ký</button>
                 ) : (
                     <div className="navbar-profile" ref={profileRef}>
                         <img
@@ -90,8 +90,20 @@ const Navbar = ({ setShowLogin }) => {
                                         onError={() => setAvatarLoadError(true)}
                                     />
                                     <div className="profile-info">
-                                        <h3>{user ? user.name : 'Loading...'}</h3>
-                                        <p>{user ? user.email : '...'}</p>
+                                        <h3>
+                                            {isUserLoading
+                                                ? 'Đang tải...'
+                                                : isUserError
+                                                    ? 'Lỗi hồ sơ'
+                                                    : user?.name || 'Người dùng'}
+                                        </h3>
+                                        <p>
+                                            {isUserLoading
+                                                ? '...'
+                                                : isUserError
+                                                    ? 'Không thể tải hồ sơ'
+                                                    : user?.email || '...'}
+                                        </p>
                                     </div>
                                 </div>
 

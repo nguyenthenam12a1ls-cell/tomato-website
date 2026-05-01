@@ -53,8 +53,10 @@ const Orders = () => {
         <h3>Trang Quản lý Đơn hàng</h3>
         <div className="order-list">
           {orders.length > 0 ? (
-            orders.map((order) => (
-              <div key={order._id} className='order-item'>
+            orders.map((order) => {
+              const orderId = order.id;
+              return (
+              <div key={orderId} className='order-item'>
                 <img src={assets.parcel_icon} alt="Parcel Icon" />
                 
                 {/* NHÓM THÔNG TIN MÓN ĂN VÀ KHÁCH HÀNG */}
@@ -87,7 +89,7 @@ const Orders = () => {
                 {/* SELECT TRẠNG THÁI */}
                 <div className="order-item-status">
                   <select 
-                    onChange={(event) => statusHandler(event, order._id)} 
+                    onChange={(event) => statusHandler(event, orderId)} 
                     value={order.status}
                     // Thêm class động dựa trên trạng thái
                     className={`status-select status-${order.status.toLowerCase().replace(' ', '-')}`}
@@ -98,8 +100,9 @@ const Orders = () => {
                   </select>
                 </div>
 
-              </div>
-            ))
+                </div>
+              );
+            })
           ) : (
             <p>Không có đơn hàng nào.</p>
           )}

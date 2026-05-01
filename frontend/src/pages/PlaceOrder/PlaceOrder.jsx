@@ -4,7 +4,7 @@ import { CartContext } from '../../Context/CartContext.jsx' // Đảm bảo đư
 import { useAuth } from '../../Context/AuthContext.jsx' // (Hoặc import AuthContext tùy cách bạn setup)
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify' 
+import { toast } from 'react-toastify'
 
 const PlaceOrder = () => {
   // Lấy context
@@ -15,13 +15,13 @@ const PlaceOrder = () => {
     firstName: "", lastName: "", email: "", street: "",
     city: "", state: "", zipcode: "", country: "", phone: ""
   });
-  
+
   // --- THÊM STATE MỚI CHO THANH TOÁN ---
   const [paymentMethod, setPaymentMethod] = useState("stripe"); // Mặc định là Stripe
 
   const onChangeHandler = (event) => {
     // Sửa lỗi gõ không được (từ bước trước)
-    const name = event.target.name; 
+    const name = event.target.name;
     const value = event.target.value;
     setData((data) => ({ ...data, [name]: value }));
   };
@@ -36,10 +36,11 @@ const PlaceOrder = () => {
     event.preventDefault();
     let orderItems = [];
     food_list.map((item) => {
-      if (cartItems[item._id] > 0) {
-        let itemInfo = item;
-        itemInfo["quantity"] = cartItems[item._id];
-        orderItems.push(itemInfo);
+      if (cartItems[item.id] > 0) {
+        orderItems.push({
+          ...item,
+          quantity: cartItems[item.id]
+        });
       }
     });
 
@@ -63,7 +64,7 @@ const PlaceOrder = () => {
         toast.error(response.data.message || "Không thể tạo đơn hàng");
       }
     } catch {
-        toast.error("Lỗi server, không thể đặt hàng");
+      toast.error("Lỗi server, không thể đặt hàng");
     }
   };
 
@@ -78,11 +79,11 @@ const PlaceOrder = () => {
 
   return (
     <form onSubmit={placeOrder} className='place-order'>
-      
+
       {/* CỘT TRÁI (FORM ĐỊA CHỈ) */}
       <div className="place-order-left">
         <p className="title">Thông tin giao hàng</p>
-        
+
         <div className="multi-fields">
           <div className="form-group"><label>Tên</label><input required name='firstName' onChange={onChangeHandler} value={data.firstName} type="text" placeholder='Tên' /></div>
           <div className="form-group"><label>Họ</label><input required name='lastName' onChange={onChangeHandler} value={data.lastName} type="text" placeholder='Họ' /></div>
@@ -102,32 +103,32 @@ const PlaceOrder = () => {
 
       {/* CỘT PHẢI (TỔNG TIỀN VÀ CHỌN THANH TOÁN) */}
       <div className="place-order-right">
-        
+
         {/* --- THÊM KHỐI CHỌN THANH TOÁN --- */}
         <div className="payment-method">
-            <p className="title">Phương thức thanh toán</p>
-            <div className="payment-option">
-                <input 
-                    type="radio" 
-                    id="stripe" 
-                    name="paymentMethod" 
-                    value="stripe" 
-                    checked={paymentMethod === "stripe"} 
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                />
-                <label htmlFor="stripe">Thanh toán quốc tế (Stripe)</label>
-            </div>
-            <div className="payment-option">
-                <input 
-                    type="radio" 
-                    id="vnpay" 
-                    name="paymentMethod" 
-                    value="vnpay" 
-                    checked={paymentMethod === "vnpay"} 
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                />
-                <label htmlFor="vnpay">Thanh toán nội địa (VNPay)</label>
-            </div>
+          <p className="title">Phương thức thanh toán</p>
+          <div className="payment-option">
+            <input
+              type="radio"
+              id="stripe"
+              name="paymentMethod"
+              value="stripe"
+              checked={paymentMethod === "stripe"}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            />
+            <label htmlFor="stripe">Thanh toán quốc tế (Stripe)</label>
+          </div>
+          <div className="payment-option">
+            <input
+              type="radio"
+              id="vnpay"
+              name="paymentMethod"
+              value="vnpay"
+              checked={paymentMethod === "vnpay"}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            />
+            <label htmlFor="vnpay">Thanh toán nội địa (VNPay)</label>
+          </div>
         </div>
 
         {/* Khối Tổng tiền (Giữ nguyên) */}

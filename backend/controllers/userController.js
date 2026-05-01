@@ -148,7 +148,7 @@ const getProfile = async (req, res) => {
         });
 
         if (!user) {
-            return res.json({ success: false, message: "Không tìm thấy user" });
+            return res.status(401).json({ success: false, message: "Không tìm thấy user" });
         }
         res.json({
             success: true,

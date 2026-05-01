@@ -14,13 +14,7 @@ The backend now uses `Prisma + PostgreSQL` as the primary data layer.
 
 ## Architecture Notes
 
-The project was originally structured around MongoDB-style response shapes. During the PostgreSQL migration, some backend endpoints still return compatibility fields such as:
-
-- `_id`
-- `address`
-- `items`
-
-This is intentional so the frontend and admin apps can continue to work while the backend migration is completed.
+The backend has been migrated to Prisma + PostgreSQL. Responses are modeled for the relational schema and the runtime uses Prisma + PostgreSQL.
 
 ## Tech Stack
 
@@ -223,7 +217,7 @@ npm run dev
 
 Backend migration is now applied in the main runtime path:
 
-- `server.js` no longer initializes MongoDB
+- `server.js` uses Prisma + PostgreSQL
 - `userController.js` uses Prisma
 - `passport.js` uses Prisma
 - `cartController.js` uses `Cart` and `CartItem`

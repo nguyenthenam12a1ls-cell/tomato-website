@@ -18,7 +18,6 @@ function sortObject(obj) {
 
 const serializeOrder = (order) => ({
     ...order,
-    _id: order.id,
     address: {
         firstName: order.firstName,
         lastName: order.lastName,
@@ -32,7 +31,6 @@ const serializeOrder = (order) => ({
     },
     items: (order.items || []).map((item) => ({
         ...item,
-        _id: item.id,
         name: item.foodName,
         price: item.foodPrice,
     })),
@@ -138,7 +136,7 @@ const placeOrder = async (req, res) => {
                 phone: address.phone || "",
                 items: {
                     create: items.map((item) => ({
-                        foodId: item._id ? Number(item._id) : item.id ? Number(item.id) : null,
+                        foodId: item.id ? Number(item.id) : null,
                         foodName: item.name,
                         foodPrice: Number(item.price),
                         quantity: Number(item.quantity),

@@ -51,18 +51,19 @@ const List = () => {
             <b>Action</b>
           </div>
           {list.map((item,index)=>{
+            const itemId = item.id || index;
             return(
-              <div key={index} className="list-table-format">
+              <div key={itemId} className="list-table-format">
                 <img className='list-item-image' src={`${url}/images/`+item.image} alt=''/>
                 <p>{item.name}</p>
                 <p>{item.category}</p>
                 <p>${item.price}</p>
                 {/* 4. NÂNG CẤP ICON ACTION */}
                 <div className="action-icons">
-                  <Link to={`/edit/${item._id}`}>
+                  <Link to={`/edit/${itemId}`}>
                     <img className='action-icon' src={assets.edit_icon} alt="Edit" />
                   </Link>
-                  <img onClick={()=>removeFood(item._id)} className='action-icon' src={assets.close_icon} alt="Delete" />
+                  <img onClick={()=>removeFood(itemId)} className='action-icon' src={assets.close_icon} alt="Delete" />
                 </div>
               </div>
             )

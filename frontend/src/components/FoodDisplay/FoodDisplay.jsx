@@ -13,12 +13,11 @@ const FoodDisplay = ({ category, excludeId = null }) => {
     <div className='food-display' id='food-display'>
         <h2>Top món ngon gần bạn</h2>
         <div className="food-display-list">
-            {food_list.map((item, index)=>{
+            {food_list.map((item)=>{
                 
-                // 3. THÊM ĐIỀU KIỆN LỌC (item._id !== excludeId)
-                if ((category==="All" || category===item.category) && (item._id !== excludeId)) {
+                if ((category==="All" || category===item.category) && (item.id !== excludeId)) {
 
-                  return <FoodItem key={index} id={item._id} name={item.name} description={item.description} price={item.price} image={item.image}/>
+                  return <FoodItem key={item.id} id={item.id} name={item.name} description={item.description} price={item.price} image={item.image}/>
                 }
             })}
         </div>

@@ -238,8 +238,10 @@ const Dashboard = () => {
         <div className="dashboard-recent">
           <h3>Đơn hàng gần đây</h3>
           <div className="recent-orders-list">
-              {recentOrders.length > 0 ? recentOrders.map(o => (
-                <div key={o._id} className="recent-order-item">
+              {recentOrders.length > 0 ? recentOrders.map(o => {
+                const orderId = o.id;
+                return (
+                <div key={orderId} className="recent-order-item">
                   <img src={assets.parcel_icon} alt="" />
                   <div>
                     <p className="recent-order-items">
@@ -251,7 +253,8 @@ const Dashboard = () => {
                   </div>
                   <p className="recent-order-amount">{formatCurrency(o.amount)}</p>
                 </div>
-              )) : <p>Không có đơn hàng gần đây.</p>} 
+                )
+              }) : <p>Không có đơn hàng gần đây.</p>} 
           </div>
         </div>
       </div>

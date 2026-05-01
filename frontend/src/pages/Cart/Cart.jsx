@@ -46,10 +46,10 @@ const Cart = () => {
           <h2>Giỏ hàng của bạn</h2>
           <hr />
           
-          {food_list.map((item, index) => {
-            if (cartItems[item._id] > 0) {
+          {food_list.map((item) => {
+            if (cartItems[item.id] > 0) {
               return (
-                <div key={index} className="cart-item">
+                <div key={item.id} className="cart-item">
                   <img src={url + "/images/" + item.image} alt={item.name} className="cart-item-image" />
                   <div className="cart-item-details">
                     <p className="cart-item-name">{item.name}</p>
@@ -57,14 +57,14 @@ const Cart = () => {
                     <div className="cart-item-counter">
                       
                       {/* 2. SỬA LẠI ĐƯỜNG DẪN SRC ĐỂ DÙNG ASSETS */}
-                      <img onClick={() => removeFromCart(item._id)} src={assets.remove_icon_red} alt="Remove" />
-                      <p>{cartItems[item._id]}</p>
-                      <img onClick={() => addToCart(item._id)} src={assets.add_icon_green} alt="Add" />
+                      <img onClick={() => removeFromCart(item.id)} src={assets.remove_icon_red} alt="Remove" />
+                      <p>{cartItems[item.id]}</p>
+                      <img onClick={() => addToCart(item.id)} src={assets.add_icon_green} alt="Add" />
 
                     </div>
                   </div>
-                  <p className="cart-item-total">${item.price * cartItems[item._id]}</p>
-                  <p onClick={() => removeFromCart(item._id)} className='cart-item-remove'>×</p>
+                  <p className="cart-item-total">${item.price * cartItems[item.id]}</p>
+                  <p onClick={() => removeFromCart(item.id)} className='cart-item-remove'>×</p>
                 </div>
               );
             }
