@@ -15,9 +15,6 @@ const createToken = (id) => {
 }
 
 const login = async (email, password) => {
-    if (!email || !password) {
-        throw new Error("Cần nhập thông tin và mật khẩu");
-    }
 
     const user = await prisma.user.findUnique({
         where: { email }
@@ -45,10 +42,6 @@ const login = async (email, password) => {
 
 
 const register = async (name, email, password) => {
-
-    if (!name || !email || !password) {
-        throw new Error('Thông tin đăng nhập không hợp lệ');
-    }
 
     const exists = await prisma.user.findUnique({
         where: { email }
@@ -110,19 +103,17 @@ const getProfile = async (userId) => {
     if (!user) {
         throw new Error("Không tìm thấy user");
     }
-    return ({
-        success: true,
-        data: {
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
-            phone: user.phone,
-            street: user.street,
-            ward: user.ward,
-            province: user.province,
-            country: user.country
-        }
-    });
+    return {
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        phone: user.phone,
+        street: user.street,
+        ward: user.ward,
+        province: user.province,
+        country: user.country
+    };
+
 }
 
 const updateProfile = async (userId, profileData, file) => {
