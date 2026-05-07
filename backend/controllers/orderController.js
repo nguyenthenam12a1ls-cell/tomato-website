@@ -2,6 +2,7 @@ import { prisma } from "../config/prisma.js";
 import Stripe from "stripe";
 import moment from "moment-timezone";
 import crypto from "crypto";
+import { orderService } from "../services/orderService.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -93,68 +94,14 @@ const placeOrder = async (req, res) => {
     const frontend_url = process.env.FRONTEND_URL || "http://localhost:5173";
 
     try {
-        const userId = Number(req.userId);
+
+        const userId = req.userId;
         const paymentMethod = req.body.paymentMethod;
         const amountUSD = Number(req.body.amount);
         const address = req.body.address || {};
         const items = Array.isArray(req.body.items) ? req.body.items : [];
 
-        if (Number.isNaN(userId) || Number.isNaN(amountUSD) || items.length === 0) {
-            return res.json({ success: false, message: "Dữ liệu đơn hàng không hợp lệ" });
-        }
-
-        let finalAmount = amountUSD;
-        let currency = "usd";
-
-        if (paymentMethod === "vnpay") {
-            finalAmount = Math.round(amountUSD * USD_TO_VND_RATE);
-            currency = "vnd";
-        }
-
-        if (!["stripe", "vnpay"].includes(paymentMethod)) {
-            return res.json({
-                success: false,
-                message: "Phương thức thanh toán không hợp lệ",
-            });
-        }
-
-        const newOrder = await prisma.order.create({
-            data: {
-                userId,
-                amount: finalAmount,
-                originalAmount: amountUSD,
-                currency,
-                paymentMethod,
-                email: address.email || "",
-                firstName: address.firstName || "",
-                lastName: address.lastName || "",
-                street: address.street || "",
-                city: address.city || "",
-                state: address.state || "",
-                zipcode: address.zipcode || "",
-                country: address.country || "",
-                phone: address.phone || "",
-                items: {
-                    create: items.map((item) => ({
-                        foodId: item.id ? Number(item.id) : null,
-                        foodName: item.name,
-                        foodPrice: Number(item.price),
-                        quantity: Number(item.quantity),
-                    })),
-                },
-            },
-            include: { items: true },
-        });
-
-        const cart = await prisma.cart.findUnique({
-            where: { userId },
-        });
-
-        if (cart) {
-            await prisma.cartItem.deleteMany({
-                where: { cartId: cart.id },
-            });
-        }
+        const { newOrder, finalAmount, currency } = await orderService.placeOrder(userId, paymentMethod, amountUSD, address, items);
 
         if (paymentMethod === "stripe") {
             const line_items = items.map((item) => ({
@@ -210,20 +157,8 @@ const verifyOrder = async (req, res) => {
     const { orderId, success } = req.body;
 
     try {
-        if (success === "true") {
-            await prisma.order.update({
-                where: { id: Number(orderId) },
-                data: {
-                    payment: true,
-                    status: "Food Processing",
-                },
-            });
-            return res.json({ success: true, message: "Paid" });
-        }
-
-        await prisma.order.delete({
-            where: { id: Number(orderId) },
-        });
+        const result = await orderService.verifyOrder(orderId, success);
+        if (result) return res.json({ success: true, message: result.message });
         return res.json({ success: false, message: "Not Paid" });
     } catch (error) {
         console.log(error);
@@ -281,12 +216,8 @@ const vnpayReturn = async (req, res) => {
 
 const userOrders = async (req, res) => {
     try {
-        const orders = await prisma.order.findMany({
-            where: { userId: Number(req.userId) },
-            include: { items: true },
-            orderBy: { createdAt: "desc" },
-        });
-
+        const userId = req.userId;
+        const orders = await orderService.getUserOrders(userId);
         res.json({ success: true, data: orders.map(serializeOrder) });
     } catch (error) {
         console.log(error);
@@ -296,10 +227,7 @@ const userOrders = async (req, res) => {
 
 const listOrders = async (req, res) => {
     try {
-        const orders = await prisma.order.findMany({
-            include: { items: true },
-            orderBy: { createdAt: "desc" },
-        });
+        const orders = await orderService.getAllOrders();
         res.json({ success: true, data: orders.map(serializeOrder) });
     } catch (error) {
         console.log(error);
@@ -309,12 +237,8 @@ const listOrders = async (req, res) => {
 
 const updateStatus = async (req, res) => {
     try {
-        await prisma.order.update({
-            where: { id: Number(req.body.orderId) },
-            data: {
-                status: req.body.status,
-            },
-        });
+        const { orderId, status } = req.body;
+        await orderService.updateOrderStatus(orderId, status);
         res.json({ success: true, message: "Status Updated" });
     } catch (error) {
         console.log(error);
@@ -326,24 +250,8 @@ const getRevenueQueryMatch = () => ({ payment: true });
 
 const getStats = async (req, res) => {
     try {
-        const totalOrders = await prisma.order.count();
-        const totalUsers = await prisma.user.count({
-            where: { role: "user" },
-        });
-
-        const revenueAggregate = await prisma.order.aggregate({
-            where: getRevenueQueryMatch(),
-            _sum: {
-                amount: true,
-            },
-        });
-
-        const totalRevenue = revenueAggregate._sum.amount || 0;
-
-        res.json({
-            success: true,
-            data: { totalOrders, totalRevenue, totalUsers },
-        });
+        const result = await orderService.getStats();
+        res.json({ success: true, ...result });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Lỗi Server khi lấy thông tin" });
@@ -352,11 +260,7 @@ const getStats = async (req, res) => {
 
 const getRecentOrders = async (req, res) => {
     try {
-        const orders = await prisma.order.findMany({
-            include: { items: true },
-            orderBy: { createdAt: "desc" },
-            take: 10,
-        });
+        const orders = await orderService.getRecentOrders();
         res.json({ success: true, data: orders.map(serializeOrder) });
     } catch (error) {
         console.log(error);
@@ -420,29 +324,7 @@ const getMonthlyRevenue = async (req, res) => {
         const year = parseInt(req.query.year);
         const month = parseInt(req.query.month);
 
-        const start = new Date(year, month - 1, 1);
-        const end = new Date(year, month, 0);
-
-        const orders = await getPaidOrdersInRange(start, end);
-        const grouped = new Map();
-
-        for (const order of orders) {
-            const dateKey = order.createdAt.toISOString().split("T")[0];
-            grouped.set(dateKey, (grouped.get(dateKey) || 0) + order.amount);
-        }
-
-        const data = Array.from(grouped.entries()).map(([key, value]) => ({
-            key,
-            value,
-        }));
-
-        const chart = padDataForChart(
-            data,
-            start,
-            end,
-            `Doanh thu Tháng ${month}/${year}`
-        );
-
+        const chart = await orderService.getMonthlyRevenue(year, month);
         res.json({ success: true, data: chart });
     } catch (error) {
         console.log(error);
@@ -455,29 +337,7 @@ const getQuarterlyRevenue = async (req, res) => {
         const year = parseInt(req.query.year);
         const quarter = parseInt(req.query.quarter);
 
-        const startMonth = (quarter - 1) * 3;
-        const start = new Date(year, startMonth, 1);
-        const end = new Date(year, startMonth + 3, 0);
-
-        const orders = await getPaidOrdersInRange(start, end);
-        const grouped = new Map();
-
-        for (const order of orders) {
-            const dateKey = order.createdAt.toISOString().split("T")[0];
-            grouped.set(dateKey, (grouped.get(dateKey) || 0) + order.amount);
-        }
-
-        const data = Array.from(grouped.entries()).map(([key, value]) => ({
-            key,
-            value,
-        }));
-
-        const chart = padDataForChart(
-            data,
-            start,
-            end,
-            `Doanh thu Quý ${quarter}/${year}`
-        );
+        const chart = await orderService.getQuarterlyRevenue(year, quarter);
 
         res.json({ success: true, data: chart });
     } catch (error) {
@@ -489,53 +349,8 @@ const getQuarterlyRevenue = async (req, res) => {
 const getYearlyRevenue = async (req, res) => {
     try {
         const year = parseInt(req.query.year);
-        const start = new Date(year, 0, 1);
-        const end = new Date(year, 11, 31);
-
-        const orders = await getPaidOrdersInRange(start, end);
-        const grouped = new Map();
-
-        for (const order of orders) {
-            const month = order.createdAt.getMonth() + 1;
-            grouped.set(month, (grouped.get(month) || 0) + order.amount);
-        }
-
-        const labels = [
-            "Th 1",
-            "Th 2",
-            "Th 3",
-            "Th 4",
-            "Th 5",
-            "Th 6",
-            "Th 7",
-            "Th 8",
-            "Th 9",
-            "Th 10",
-            "Th 11",
-            "Th 12",
-        ];
-
-        const points = [];
-        for (let i = 1; i <= 12; i++) {
-            points.push(grouped.get(i) || 0);
-        }
-
-        res.json({
-            success: true,
-            data: {
-                labels,
-                datasets: [
-                    {
-                        label: `Doanh thu năm ${year}`,
-                        data: points,
-                        backgroundColor: "rgba(75, 192, 192, 0.5)",
-                        borderColor: "rgb(75, 192, 192)",
-                        borderWidth: 1,
-                        tension: 0.4,
-                    },
-                ],
-            },
-        });
+        const data = await orderService.getYearlyRevenue(year);
+        res.json({ success: true, ...data });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Lỗi Server (yearly)" });
