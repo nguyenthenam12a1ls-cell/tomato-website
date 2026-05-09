@@ -11,7 +11,7 @@ const createToken = (id) => {
 }
 
 // login user(đã xong)
-const loginUser = async (req, res) => {
+const loginUser = async (req, res, next) => {
     const { email, password } = req.body;
     if (!email || !password) {
         return res.json({ success: false, message: 'Cần nhập thông tin và mật khẩu' });
@@ -28,14 +28,13 @@ const loginUser = async (req, res) => {
 
         return res.json({ success: true, token });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi" });
+        next(error);
     }
 }
 
 
 // register user 
-const registerUser = async (req, res) => {
+const registerUser = async (req, res, next) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
         return res.json({ success: false, message: 'Thông tin đăng nhập không hợp lệ' });
@@ -52,13 +51,12 @@ const registerUser = async (req, res) => {
 
         res.json({ success: true, token });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi khi đăng ký người dùng" });
+        next(error);
     }
 }
 
 // chức năng logout
-const logoutUser = async (req, res) => {
+const logoutUser = async (req, res, next) => {
     try {
         res.clearCookie('token', {
             httpOnly: true,
@@ -67,38 +65,35 @@ const logoutUser = async (req, res) => {
         });
         return res.json({ success: true, message: "Đã đăng xuất thành công" });
     } catch (error) {
-        console.log(error);
-        return res.json({ success: false, message: "Lỗi khi đăng xuất" });
+        next(error);
     }
 }
 
 // API lấy dữ liệu admin 
-const getAdminData = async (req, res) => {
+const getAdminData = async (req, res, next) => {
     try {
         const userId = req.userId;
         const adminData = await userService.getAdminData(userId);
         res.json({ success: true, data: adminData });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi Server khi lấy dữ liệu API" });
+        next(error);
     }
 };
 
 // API lấy thông tin profile 
-const getProfile = async (req, res) => {
+const getProfile = async (req, res, next) => {
     try {
         const userId = req.userId;
         const data = await userService.getProfile(userId);
 
         return res.json({ success: true, data });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi" });
+        next(error);
     }
 }
 
 // API cập nhật hồ sơ
-const updateProfile = async (req, res) => {
+const updateProfile = async (req, res, next) => {
     try {
         const userId = req.userId;
         const profileData = req.body;
@@ -107,40 +102,36 @@ const updateProfile = async (req, res) => {
 
         res.json({ success: true, message: "Đã cập nhật hồ sơ", data: updatedData });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi khi cập nhật hồ sơ" });
+        next(error);
     }
 }
 
 // Google Auth Callback
-const googleAuthCallback = (req, res) => {
+const googleAuthCallback = (req, res, next) => {
     try {
         const user = req.user;
         const token = createToken(user.id);
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         res.redirect(`${frontendUrl}?token=${token}`);
     } catch (error) {
-        console.log(error);
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        res.redirect(`${frontendUrl}/login-error`);
+        next(error);
     }
 }
 
 // --- HÀM MỚI: QUÊN MẬT KHẨU ---
-const forgotPassword = async (req, res) => {
+const forgotPassword = async (req, res, next) => {
     const { email } = req.body;
     try {
         const forgotedPassword = await userService.forgotPassword(email);
         res.json({ success: true, message: "Nếu email tồn tại, link reset sẽ được gửi." });
 
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi Server" });
+        next(error);
     }
 };
 
 // --- HÀM MỚI: ĐẶT LẠI MẬT KHẨU ---
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res, next) => {
     const { token } = req.params;
     const { newPassword } = req.body;
 
@@ -150,8 +141,7 @@ const resetPassword = async (req, res) => {
         res.json({ success: true, message: "Mật khẩu đã được cập nhật thành công." });
 
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Link không hợp lệ hoặc đã hết hạn." });
+        next(error);
     }
 };
 

@@ -90,7 +90,7 @@ const createVnpayUrl = (req, orderId, amountInVND) => {
     return paymentUrl;
 };
 
-const placeOrder = async (req, res) => {
+const placeOrder = async (req, res, next) => {
     const frontend_url = process.env.FRONTEND_URL || "http://localhost:5173";
 
     try {
@@ -148,12 +148,11 @@ const placeOrder = async (req, res) => {
             });
         }
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi Server" });
+        next(error);
     }
 };
 
-const verifyOrder = async (req, res) => {
+const verifyOrder = async (req, res, next) => {
     const { orderId, success } = req.body;
 
     try {
@@ -161,8 +160,7 @@ const verifyOrder = async (req, res) => {
         if (result) return res.json({ success: true, message: result.message });
         return res.json({ success: false, message: "Not Paid" });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error" });
+        next(error);
     }
 };
 
@@ -214,57 +212,52 @@ const vnpayReturn = async (req, res) => {
     return res.redirect(`${frontend_url}/cart`);
 };
 
-const userOrders = async (req, res) => {
+const userOrders = async (req, res, next) => {
     try {
         const userId = req.userId;
         const orders = await orderService.getUserOrders(userId);
         res.json({ success: true, data: orders.map(serializeOrder) });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error" });
+        next(error);
     }
 };
 
-const listOrders = async (req, res) => {
+const listOrders = async (req, res, next) => {
     try {
         const orders = await orderService.getAllOrders();
         res.json({ success: true, data: orders.map(serializeOrder) });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error" });
+        next(error);
     }
 };
 
-const updateStatus = async (req, res) => {
+const updateStatus = async (req, res, next) => {
     try {
         const { orderId, status } = req.body;
         await orderService.updateOrderStatus(orderId, status);
         res.json({ success: true, message: "Status Updated" });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error" });
+        next(error);
     }
 };
 
 const getRevenueQueryMatch = () => ({ payment: true });
 
-const getStats = async (req, res) => {
+const getStats = async (req, res, next) => {
     try {
         const result = await orderService.getStats();
         res.json({ success: true, ...result });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi Server khi lấy thông tin" });
+        next(error);
     }
 };
 
-const getRecentOrders = async (req, res) => {
+const getRecentOrders = async (req, res, next) => {
     try {
         const orders = await orderService.getRecentOrders();
         res.json({ success: true, data: orders.map(serializeOrder) });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi Server" });
+        next(error);
     }
 };
 
@@ -319,7 +312,7 @@ const getPaidOrdersInRange = async (start, end) => {
     });
 };
 
-const getMonthlyRevenue = async (req, res) => {
+const getMonthlyRevenue = async (req, res, next) => {
     try {
         const year = parseInt(req.query.year);
         const month = parseInt(req.query.month);
@@ -327,12 +320,11 @@ const getMonthlyRevenue = async (req, res) => {
         const chart = await orderService.getMonthlyRevenue(year, month);
         res.json({ success: true, data: chart });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi Server (monthly)" });
+        next(error);
     }
 };
 
-const getQuarterlyRevenue = async (req, res) => {
+const getQuarterlyRevenue = async (req, res, next) => {
     try {
         const year = parseInt(req.query.year);
         const quarter = parseInt(req.query.quarter);
@@ -341,19 +333,17 @@ const getQuarterlyRevenue = async (req, res) => {
 
         res.json({ success: true, data: chart });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi Server (quarterly)" });
+        next(error);
     }
 };
 
-const getYearlyRevenue = async (req, res) => {
+const getYearlyRevenue = async (req, res, next) => {
     try {
         const year = parseInt(req.query.year);
         const data = await orderService.getYearlyRevenue(year);
         res.json({ success: true, ...data });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi Server (yearly)" });
+        next(error);
     }
 };
 

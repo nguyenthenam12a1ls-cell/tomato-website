@@ -4,7 +4,7 @@ import multer from "multer"
 import path from "path"
 import validate from "../middleware/validate.js"
 import { schema } from "../validators/foodValidator.js"
-
+import { generalLimiter } from "../middleware/rateLimiter.js";
 
 
 const foodRouter = express.Router();
@@ -30,15 +30,15 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage, fileFilter: fileFiller });
 
-foodRouter.post("/add", (req, res, next) => {
+foodRouter.post("/add", generalLimiter, (req, res, next) => {
     upload.single("image")(req, res, (err) => {
         if (err) return res.status(400).json({ success: false, message: err.message });
         next();
     });
 }, validate(schema), addFood);
-foodRouter.get("/list", listFood);
-foodRouter.post("/remove", removeFood);
-foodRouter.get("/get/:foodId", getFoodById);
-foodRouter.post("/update", upload.single("image"), updateFood);
+foodRouter.get("/list", generalLimiter, listFood);
+foodRouter.post("/remove", generalLimiter, removeFood);
+foodRouter.get("/get/:foodId", generalLimiter, getFoodById);
+foodRouter.post("/update", generalLimiter, upload.single("image"), updateFood);
 
 export default foodRouter;

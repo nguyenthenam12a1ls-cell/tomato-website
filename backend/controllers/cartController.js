@@ -1,7 +1,8 @@
 import { cartService } from "../services/cartService.js"
 
+
 // add items to user cart
-const addToCart = async (req, res) => {
+const addToCart = async (req, res, next) => {
     try {
         const userId = Number(req.userId);
         const foodId = Number(req.body.itemId);
@@ -10,13 +11,12 @@ const addToCart = async (req, res) => {
 
         res.json({ success: true, message: "Đã thêm vào giỏ hàng" });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi thêm vào giỏ hàng" });
+        next(error);
     }
 };
 
 // remove items from user cart
-const removeFromCart = async (req, res) => {
+const removeFromCart = async (req, res, next) => {
     try {
         const userId = Number(req.userId);
         const foodId = Number(req.body.itemId);
@@ -25,20 +25,18 @@ const removeFromCart = async (req, res) => {
 
         res.json({ success: true, message: "Đã xóa món ăn khỏi giỏ hàng" });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi xóa khỏi giỏ hàng" });
+        next(error);
     }
 };
 
 // fetch user cart data
-const getCart = async (req, res) => {
+const getCart = async (req, res, next) => {
     try {
         const userId = Number(req.userId);
         const cartData = await cartService.getCart(userId);
         res.json({ success: true, cartData });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi khi lấy dữ liệu giỏ hàng" });
+        next(error);
     }
 };
 

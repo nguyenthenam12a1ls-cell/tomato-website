@@ -7,7 +7,7 @@ const serializeFood = (food) => ({
     ...food
 });
 
-const addFood = async (req, res) => {
+const addFood = async (req, res, next) => {
     try {
         const imageFilename = req.file?.filename;
         const foodData = req.body;
@@ -16,24 +16,22 @@ const addFood = async (req, res) => {
 
         res.json({ success: true, message: "Thêm món ăn thành công", data: newFood });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message || "Lỗi server" });
+        next(error);
     }
 };
 
-const listFood = async (req, res) => {
+const listFood = async (req, res, next) => {
     try {
 
         const foods = await foodService.getAllFoods();
 
         res.json({ success: true, data: foods.map(serializeFood) });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi" });
+        next(error);
     }
 };
 
-const removeFood = async (req, res) => {
+const removeFood = async (req, res, next) => {
     try {
         const foodId = Number(req.body.id);
 
@@ -41,12 +39,11 @@ const removeFood = async (req, res) => {
 
         res.json({ success: true, message: "Đã xóa món ăn thành công", data: food });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Lỗi" });
+        next(error);
     }
 };
 
-const getFoodById = async (req, res) => {
+const getFoodById = async (req, res, next) => {
     try {
         const foodId = Number(req.params.foodId);
 
@@ -54,12 +51,11 @@ const getFoodById = async (req, res) => {
 
         res.json({ success: true, data: serializeFood(food) });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message || "Lỗi server" });
+        next(error);
     }
 };
 
-const updateFood = async (req, res) => {
+const updateFood = async (req, res, next) => {
     try {
         const foodId = Number(req.body.id);
 
@@ -75,8 +71,7 @@ const updateFood = async (req, res) => {
 
         res.json({ success: true, message: "Cập nhật món ăn thành công" });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message || "Lỗi server" });
+        next(error);
     }
 };
 
