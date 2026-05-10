@@ -129,24 +129,25 @@ const placeOrder = async (req, res, next) => {
                 cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder.id}`,
             });
 
-            return res.json({
-                success: true,
-                session_url: session.url,
+            return sendSuccess(res, "Tạo link thanh toán thành công", {
+                session_url: session.url, // hoặc vnpayUrl
                 amount: amountUSD,
-                currency: "USD",
+                currency: "USD"
             });
+
         }
 
         if (paymentMethod === "vnpay") {
             const vnpayUrl = createVnpayUrl(req, newOrder.id.toString(), finalAmount);
 
-            return res.json({
-                success: true,
+            return sendSuccess(
+                res,
+                "Tạo link thanh toán thành công", {
                 session_url: vnpayUrl,
                 amount: finalAmount,
                 currency: "VND",
             });
-        }
+        };
     } catch (error) {
         next(error);
     }
@@ -157,8 +158,8 @@ const verifyOrder = async (req, res, next) => {
 
     try {
         const result = await orderService.verifyOrder(orderId, success);
-        if (result) return res.json({ success: true, message: result.message });
-        return res.json({ success: false, message: "Not Paid" });
+        if (result) return sendSuccess(res, result.message);
+        return sendError(res, "Thanh toán thất bại", 400);
     } catch (error) {
         next(error);
     }
@@ -216,7 +217,7 @@ const userOrders = async (req, res, next) => {
     try {
         const userId = req.userId;
         const orders = await orderService.getUserOrders(userId);
-        res.json({ success: true, data: orders.map(serializeOrder) });
+        sendSuccess(res, orders.map(serializeOrder));
     } catch (error) {
         next(error);
     }
@@ -225,7 +226,7 @@ const userOrders = async (req, res, next) => {
 const listOrders = async (req, res, next) => {
     try {
         const orders = await orderService.getAllOrders();
-        res.json({ success: true, data: orders.map(serializeOrder) });
+        sendSuccess(res, orders.map(serializeOrder));
     } catch (error) {
         next(error);
     }
@@ -235,7 +236,7 @@ const updateStatus = async (req, res, next) => {
     try {
         const { orderId, status } = req.body;
         await orderService.updateOrderStatus(orderId, status);
-        res.json({ success: true, message: "Status Updated" });
+        sendSuccess(res, "Đã cập nhật trạng thái");
     } catch (error) {
         next(error);
     }
@@ -246,7 +247,7 @@ const getRevenueQueryMatch = () => ({ payment: true });
 const getStats = async (req, res, next) => {
     try {
         const result = await orderService.getStats();
-        res.json({ success: true, ...result });
+        sendSuccess(res, "Lấy thống kê thành công", result);
     } catch (error) {
         next(error);
     }
@@ -255,7 +256,7 @@ const getStats = async (req, res, next) => {
 const getRecentOrders = async (req, res, next) => {
     try {
         const orders = await orderService.getRecentOrders();
-        res.json({ success: true, data: orders.map(serializeOrder) });
+        sendSuccess(res, orders.map(serializeOrder));
     } catch (error) {
         next(error);
     }
@@ -318,7 +319,7 @@ const getMonthlyRevenue = async (req, res, next) => {
         const month = parseInt(req.query.month);
 
         const chart = await orderService.getMonthlyRevenue(year, month);
-        res.json({ success: true, data: chart });
+        sendSuccess(res, "Thành công", chart);
     } catch (error) {
         next(error);
     }
@@ -331,7 +332,7 @@ const getQuarterlyRevenue = async (req, res, next) => {
 
         const chart = await orderService.getQuarterlyRevenue(year, quarter);
 
-        res.json({ success: true, data: chart });
+        sendSuccess(res, "Thành công", chart);
     } catch (error) {
         next(error);
     }
@@ -341,7 +342,7 @@ const getYearlyRevenue = async (req, res, next) => {
     try {
         const year = parseInt(req.query.year);
         const data = await orderService.getYearlyRevenue(year);
-        res.json({ success: true, ...data });
+        sendSuccess(res, "Thành công", data);
     } catch (error) {
         next(error);
     }

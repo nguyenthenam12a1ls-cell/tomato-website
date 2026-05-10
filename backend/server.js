@@ -9,6 +9,10 @@ import orderRouter from "./routes/orderRoute.js";
 import cookieParser from "cookie-parser";
 import passport from "./config/passport.js";
 import errorHandler from "./middleware/errorHandler.js"
+import morgan from "morgan";
+import helmet from "helmet"
+import compression from "compression"
+
 
 const app = express();
 const port = 4000;
@@ -17,6 +21,11 @@ app.use(express.json({ type: "application/json" }));
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 app.use(passport.initialize());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+app.use(compression());
+app.use(morgan("dev"));
 
 
 app.use("/api/food", foodRouter);

@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { foodService } from "../services/foodService.js";
-
+import { sendError, sendSuccess } from '../utils/response.js';
 
 const serializeFood = (food) => ({
     ...food
@@ -14,7 +14,7 @@ const addFood = async (req, res, next) => {
 
         const newFood = await foodService.createFood(foodData, imageFilename);
 
-        res.json({ success: true, message: "Thêm món ăn thành công", data: newFood });
+        sendSuccess(res, "Thêm món ăn thành công", newFood);
     } catch (error) {
         next(error);
     }
@@ -25,7 +25,7 @@ const listFood = async (req, res, next) => {
 
         const foods = await foodService.getAllFoods();
 
-        res.json({ success: true, data: foods.map(serializeFood) });
+        sendSuccess(res, "Lấy danh sách món ăn thành công", foods.map(serializeFood));
     } catch (error) {
         next(error);
     }
@@ -37,7 +37,7 @@ const removeFood = async (req, res, next) => {
 
         const food = await foodService.deleteFood(foodId);
 
-        res.json({ success: true, message: "Đã xóa món ăn thành công", data: food });
+        sendSuccess(res, "Đã xóa món ăn thành công", food);
     } catch (error) {
         next(error);
     }
@@ -49,7 +49,7 @@ const getFoodById = async (req, res, next) => {
 
         const food = await foodService.getFoodById(foodId);
 
-        res.json({ success: true, data: serializeFood(food) });
+        sendSuccess(res, "Lấy thông tin món ăn thành công", serializeFood(food));
     } catch (error) {
         next(error);
     }
@@ -60,7 +60,8 @@ const updateFood = async (req, res, next) => {
         const foodId = Number(req.body.id);
 
         if (Number.isNaN(foodId)) {
-            return res.json({ success: false, message: "ID món ăn không hợp lệ" });
+            sendError(res, "ID món ăn không hợp lệ");
+            return;
         }
 
         const existingFood = await foodService.getFoodById(foodId);
@@ -69,7 +70,7 @@ const updateFood = async (req, res, next) => {
 
         await foodService.updateFood(foodId, req.body, newImageFilename);
 
-        res.json({ success: true, message: "Cập nhật món ăn thành công" });
+        sendSuccess(res, "Cập nhật món ăn thành công");
     } catch (error) {
         next(error);
     }

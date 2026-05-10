@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import path from 'path'
 import { fileURLToPath } from 'url';
 import { userService } from "../services/userService.js";
-
+import { sendSuccess, sendError } from "../utils/response.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -26,7 +26,7 @@ const loginUser = async (req, res, next) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        return res.json({ success: true, token });
+        sendSuccess(res, "Đăng nhập thành công ", token);
     } catch (error) {
         next(error);
     }
@@ -37,7 +37,7 @@ const loginUser = async (req, res, next) => {
 const registerUser = async (req, res, next) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
-        return res.json({ success: false, message: 'Thông tin đăng nhập không hợp lệ' });
+        sendError(res, 'Thông tin đăng nhập không hợp lệ');
     }
     try {
         const token = await userService.register(name, email, password);
@@ -49,7 +49,7 @@ const registerUser = async (req, res, next) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        res.json({ success: true, token });
+        sendSuccess(res, "Đăng xuất thành công", token);
     } catch (error) {
         next(error);
     }
@@ -63,7 +63,7 @@ const logoutUser = async (req, res, next) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         });
-        return res.json({ success: true, message: "Đã đăng xuất thành công" });
+        sendSuccess(res, "Đã đăng xuất thành công");
     } catch (error) {
         next(error);
     }
@@ -74,7 +74,7 @@ const getAdminData = async (req, res, next) => {
     try {
         const userId = req.userId;
         const adminData = await userService.getAdminData(userId);
-        res.json({ success: true, data: adminData });
+        sendSuccess(res, "Lấy thông tin admin thành công", adminData);
     } catch (error) {
         next(error);
     }
@@ -86,7 +86,7 @@ const getProfile = async (req, res, next) => {
         const userId = req.userId;
         const data = await userService.getProfile(userId);
 
-        return res.json({ success: true, data });
+        sendSuccess(res, "Lấy thông tin profile thành công", data);
     } catch (error) {
         next(error);
     }
@@ -100,7 +100,7 @@ const updateProfile = async (req, res, next) => {
         const file = req.file
         const updatedData = await userService.updateProfile(userId, profileData, file);
 
-        res.json({ success: true, message: "Đã cập nhật hồ sơ", data: updatedData });
+        sendSuccess(res, "Đã cập nhật hồ sơ", updatedData);
     } catch (error) {
         next(error);
     }
@@ -123,7 +123,7 @@ const forgotPassword = async (req, res, next) => {
     const { email } = req.body;
     try {
         const forgotedPassword = await userService.forgotPassword(email);
-        res.json({ success: true, message: "Nếu email tồn tại, link reset sẽ được gửi." });
+        sendSuccess(res, "Nếu email tồn tại, link reset sẽ được gửi.");
 
     } catch (error) {
         next(error);
@@ -138,7 +138,7 @@ const resetPassword = async (req, res, next) => {
     try {
         const resetedPassword = await userService.resetPassword(token, newPassword);
 
-        res.json({ success: true, message: "Mật khẩu đã được cập nhật thành công." });
+        sendSuccess(res, "Mật khẩu đã được cập nhật thành công.");
 
     } catch (error) {
         next(error);

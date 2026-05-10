@@ -1,5 +1,5 @@
 import { cartService } from "../services/cartService.js"
-
+import { sendSuccess, sendError } from "../utils/response.js";
 
 // add items to user cart
 const addToCart = async (req, res, next) => {
@@ -9,7 +9,7 @@ const addToCart = async (req, res, next) => {
 
         await cartService.addToCart(userId, foodId);
 
-        res.json({ success: true, message: "Đã thêm vào giỏ hàng" });
+        sendSuccess(res, "Đã thêm vào giỏ hàng");
     } catch (error) {
         next(error);
     }
@@ -23,7 +23,7 @@ const removeFromCart = async (req, res, next) => {
 
         await cartService.removeFromCart(userId, foodId);
 
-        res.json({ success: true, message: "Đã xóa món ăn khỏi giỏ hàng" });
+        sendSuccess(res, "Đã xóa món ăn khỏi giỏ hàng");
     } catch (error) {
         next(error);
     }
@@ -34,7 +34,7 @@ const getCart = async (req, res, next) => {
     try {
         const userId = Number(req.userId);
         const cartData = await cartService.getCart(userId);
-        res.json({ success: true, cartData });
+        sendSuccess(res, "Thao tác giỏ hàng thành công", cartData);
     } catch (error) {
         next(error);
     }
