@@ -217,7 +217,7 @@ const userOrders = async (req, res, next) => {
     try {
         const userId = req.userId;
         const orders = await orderService.getUserOrders(userId);
-        sendSuccess(res, orders.map(serializeOrder));
+        sendSuccess(res, "Lấy đơn hàng của user thành công", orders.map(serializeOrder));
     } catch (error) {
         next(error);
     }
@@ -226,7 +226,7 @@ const userOrders = async (req, res, next) => {
 const listOrders = async (req, res, next) => {
     try {
         const orders = await orderService.getAllOrders();
-        sendSuccess(res, orders.map(serializeOrder));
+        sendSuccess(res, "Lấy danh sách đơn hàng thành công", orders.map(serializeOrder));
     } catch (error) {
         next(error);
     }
@@ -256,7 +256,7 @@ const getStats = async (req, res, next) => {
 const getRecentOrders = async (req, res, next) => {
     try {
         const orders = await orderService.getRecentOrders();
-        sendSuccess(res, orders.map(serializeOrder));
+        sendSuccess(res, "Lấy đơn hàng gần đây thành công", orders.map(serializeOrder));
     } catch (error) {
         next(error);
     }

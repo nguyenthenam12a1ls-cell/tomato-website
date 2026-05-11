@@ -14,7 +14,8 @@ const createToken = (id) => {
 const loginUser = async (req, res, next) => {
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.json({ success: false, message: 'Cần nhập thông tin và mật khẩu' });
+        sendError(res, 'Cần nhập thông tin và mật khẩu');
+        return;
     }
     try {
         const token = await userService.login(email, password);
@@ -38,6 +39,7 @@ const registerUser = async (req, res, next) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
         sendError(res, 'Thông tin đăng nhập không hợp lệ');
+        return;
     }
     try {
         const token = await userService.register(name, email, password);

@@ -5,7 +5,8 @@ import path from "path"
 import validate from "../middleware/validate.js"
 import { schema } from "../validators/foodValidator.js"
 import { generalLimiter } from "../middleware/rateLimiter.js";
-
+import authMiddleware from "../middleware/auth.js";
+import adminAuth from "../middleware/adminAuth.js";
 
 const foodRouter = express.Router();
 
@@ -35,10 +36,10 @@ foodRouter.post("/add", generalLimiter, (req, res, next) => {
         if (err) return res.status(400).json({ success: false, message: err.message });
         next();
     });
-}, validate(schema), addFood);
+}, authMiddleware, adminAuth, validate(schema), addFood);
 foodRouter.get("/list", generalLimiter, listFood);
-foodRouter.post("/remove", generalLimiter, removeFood);
+foodRouter.post("/remove", generalLimiter, authMiddleware, adminAuth, removeFood);
 foodRouter.get("/get/:foodId", generalLimiter, getFoodById);
-foodRouter.post("/update", generalLimiter, upload.single("image"), updateFood);
+foodRouter.post("/update", generalLimiter, authMiddleware, adminAuth, upload.single("image"), updateFood);
 
 export default foodRouter;
