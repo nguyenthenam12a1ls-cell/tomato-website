@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import moment from "moment-timezone";
 import crypto from "crypto";
 import { orderService } from "../services/orderService.js";
-
+import { sendOrderConfirmationEmail } from "../utils/mailService.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const USD_TO_VND_RATE = 25000;
@@ -154,12 +154,12 @@ const placeOrder = async (req, res, next) => {
 };
 
 const verifyOrder = async (req, res, next) => {
-    const { orderId, success } = req.body;
+    const { orderId, success, email } = req.body;
 
     try {
         const result = await orderService.verifyOrder(orderId, success);
-        if (result) return sendSuccess(res, result.message);
-        return sendError(res, "Thanh toán thất bại", 400);
+        if (result) sendOrderConfirmationEmail(result.email, result);
+        return sendSuccess(res, result.message);
     } catch (error) {
         next(error);
     }
@@ -191,13 +191,15 @@ const vnpayReturn = async (req, res) => {
 
     if (checkHash === secureHash) {
         if (responseCode === "00") {
-            await prisma.order.update({
+            const updatedOrder = await prisma.order.update({
                 where: { id: orderId },
                 data: {
                     payment: true,
                     status: "Food Processing",
                 },
             });
+
+            sendOrderConfirmationEmail(updatedOrder.email, updatedOrder);
             return res.redirect(`${frontend_url}/myorders`);
         }
 

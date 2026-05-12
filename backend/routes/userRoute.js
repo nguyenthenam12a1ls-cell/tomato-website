@@ -4,12 +4,13 @@ import authMiddleware from '../middleware/auth.js'
 import multer from 'multer'
 import passport from 'passport';
 import { authLimiter, generalLimiter } from '../middleware/rateLimiter.js';
-
+import validate from "../middleware/validate.js";
+import { registerSchema, loginSchema } from "../validators/userValidator.js";
 const upload = multer({ storage: multer.memoryStorage() });
 const userRouter = express.Router();
 
-userRouter.post('/register', authLimiter, registerUser);
-userRouter.post('/login', authLimiter, loginUser);
+userRouter.post('/register', authLimiter, validate(registerSchema), registerUser);
+userRouter.post('/login', authLimiter, validate(loginSchema), loginUser);
 userRouter.post('/logout', generalLimiter, logoutUser);
 userRouter.post('/getadmin', generalLimiter, authMiddleware, getAdminData);
 userRouter.get("/profile", generalLimiter, authMiddleware, getProfile);

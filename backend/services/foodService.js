@@ -40,7 +40,14 @@ const deleteFood = async (foodId) => {
         throw new Error("Không tìm thấy món ăn");
     }
 
-    fs.unlink(`uploads/${food.image}`, () => { });
+    const oldFood = path.join("uploads", food.image);
+    try {
+        if (fs.existsSync(oldFood)) {
+            fs.unlinkSync(oldFood);
+        }
+    } catch (error) {
+        console.error("Lỗi khi xóa đồ ăn: " + error)
+    }
 
     await prisma.food.delete({
         where: { id: foodId }

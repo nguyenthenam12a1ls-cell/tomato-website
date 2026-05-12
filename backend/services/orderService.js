@@ -123,14 +123,14 @@ const placeOrder = async (userId, paymentMethod, amountUSD, address, items) => {
 
 const verifyOrder = async (orderId, success) => {
     if (success === "true") {
-        await prisma.order.update({
+        const result = await prisma.order.update({
             where: { id: Number(orderId) },
             data: {
                 payment: true,
                 status: "Food Processing",
             },
         });
-        return ({ message: "Paid" });
+        return result;
     }
     await prisma.order.delete({
         where: { id: Number(orderId) },

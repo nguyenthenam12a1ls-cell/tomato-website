@@ -4,9 +4,11 @@ import { placeOrder, verifyOrder, vnpayReturn, userOrders, listOrders, updateSta
 import { generalLimiter } from "../middleware/rateLimiter.js";
 import authMiddleware from "../middleware/auth.js";
 import adminAuth from "../middleware/adminAuth.js";
+import validate from "../middleware/validate.js";
+import { orderSchema } from "../validators/orderValidator.js";
 const orderRouter = express.Router();
 
-orderRouter.post("/place", generalLimiter, authMiddleware, placeOrder);
+orderRouter.post("/place", generalLimiter, authMiddleware, validate(orderSchema), placeOrder);
 orderRouter.post("/verify", generalLimiter, verifyOrder); // Dùng cho Stripe
 orderRouter.post("/userorders", generalLimiter, authMiddleware, userOrders);
 
