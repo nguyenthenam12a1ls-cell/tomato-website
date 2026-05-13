@@ -3,6 +3,8 @@ import path from 'path'
 import { fileURLToPath } from 'url';
 import { userService } from "../services/userService.js";
 import { sendSuccess, sendError } from "../utils/response.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import AppError from "../utils/AppError.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -11,141 +13,110 @@ const createToken = (id) => {
 }
 
 // login user(đã xong)
-const loginUser = async (req, res, next) => {
+const loginUser = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
     if (!email || !password) {
-        sendError(res, 'Cần nhập thông tin và mật khẩu');
-        return;
+        throw new AppError("Cần thêm thông tin email và mật khẩu", 404);
     }
-    try {
-        const token = await userService.login(email, password);
+    const token = await userService.login(email, password);
 
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
 
-        sendSuccess(res, "Đăng nhập thành công ", token);
-    } catch (error) {
-        next(error);
-    }
-}
+    sendSuccess(res, "Đăng nhập thành công ", token);
+});
 
 
 // register user 
-const registerUser = async (req, res, next) => {
+const registerUser = asyncHandler(async (req, res, next) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
-        sendError(res, 'Thông tin đăng nhập không hợp lệ');
-        return;
+        throw new AppError("Cần thêm thông tin tên, email và password", 404);
     }
-    try {
-        const token = await userService.register(name, email, password);
+    const token = await userService.register(name, email, password);
 
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
 
-        sendSuccess(res, "Đăng xuất thành công", token);
-    } catch (error) {
-        next(error);
-    }
-}
+    sendSuccess(res, "Đăng kí thành công", token);
+});
 
 // chức năng logout
-const logoutUser = async (req, res, next) => {
-    try {
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        });
-        sendSuccess(res, "Đã đăng xuất thành công");
-    } catch (error) {
-        next(error);
-    }
-}
+const logoutUser = asyncHandler(async (req, res, next) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    });
+    sendSuccess(res, "Đã đăng xuất thành công");
+});
 
 // API lấy dữ liệu admin 
-const getAdminData = async (req, res, next) => {
-    try {
-        const userId = req.userId;
-        const adminData = await userService.getAdminData(userId);
-        sendSuccess(res, "Lấy thông tin admin thành công", adminData);
-    } catch (error) {
-        next(error);
+const getAdminData = asyncHandler(async (req, res, next) => {
+    const userId = req.userId;
+    const adminData = await userService.getAdminData(userId);
+
+    if (!adminData) {
+        throw new AppError("Cần tìm thông tin admin", 404);
     }
-};
+    sendSuccess(res, "Lấy thông tin admin thành công", adminData);
+});
 
 // API lấy thông tin profile 
-const getProfile = async (req, res, next) => {
-    try {
-        const userId = req.userId;
-        const data = await userService.getProfile(userId);
+const getProfile = asyncHandler(async (req, res, next) => {
+    const userId = req.userId;
+    const data = await userService.getProfile(userId);
 
-        sendSuccess(res, "Lấy thông tin profile thành công", data);
-    } catch (error) {
-        next(error);
-    }
-}
+    if (!data) throw new AppError("Cần thêm thông tin profile", 404);
+    sendSuccess(res, "Lấy thông tin profile thành công", data);
+});
 
 // API cập nhật hồ sơ
-const updateProfile = async (req, res, next) => {
-    try {
-        const userId = req.userId;
-        const profileData = req.body;
-        const file = req.file
-        const updatedData = await userService.updateProfile(userId, profileData, file);
+const updateProfile = asyncHandler(async (req, res, next) => {
+    const userId = req.userId;
+    const profileData = req.body;
+    const file = req.file
+    const updatedData = await userService.updateProfile(userId, profileData, file);
 
-        sendSuccess(res, "Đã cập nhật hồ sơ", updatedData);
-    } catch (error) {
-        next(error);
-    }
-}
+    if (!updatedData) throw new AppError("Cần cập nhật hồ sơ", 404);
+    sendSuccess(res, "Đã cập nhật hồ sơ", updatedData);
+});
 
 // Google Auth Callback
-const googleAuthCallback = (req, res, next) => {
-    try {
-        const user = req.user;
-        const token = createToken(user.id);
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        res.redirect(`${frontendUrl}?token=${token}`);
-    } catch (error) {
-        next(error);
-    }
-}
+const googleAuthCallback = asyncHandler((req, res, next) => {
+    const user = req.user;
+    const token = createToken(user.id);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}?token=${token}`);
+});
 
 // --- HÀM MỚI: QUÊN MẬT KHẨU ---
-const forgotPassword = async (req, res, next) => {
+const forgotPassword = asyncHandler(async (req, res, next) => {
     const { email } = req.body;
-    try {
-        const forgotedPassword = await userService.forgotPassword(email);
-        sendSuccess(res, "Nếu email tồn tại, link reset sẽ được gửi.");
-
-    } catch (error) {
-        next(error);
+    const forgotedPassword = await userService.forgotPassword(email);
+    if (!forgotedPassword) {
+        throw new AppError("Lỗi quên mật khẩu", 404);
     }
-};
+    sendSuccess(res, "Nếu email tồn tại, link reset sẽ được gửi.");
+});
 
 // --- HÀM MỚI: ĐẶT LẠI MẬT KHẨU ---
-const resetPassword = async (req, res, next) => {
+const resetPassword = asyncHandler(async (req, res, next) => {
     const { token } = req.params;
     const { newPassword } = req.body;
 
-    try {
-        const resetedPassword = await userService.resetPassword(token, newPassword);
-
-        sendSuccess(res, "Mật khẩu đã được cập nhật thành công.");
-
-    } catch (error) {
-        next(error);
-    }
-};
+    const resetedPassword = await userService.resetPassword(token, newPassword);
+    if (!resetedPassword) throw new AppError("Không thể reset password", 404);
+    sendSuccess(res, "Mật khẩu đã được cập nhật thành công.");
+});
 
 
 export {

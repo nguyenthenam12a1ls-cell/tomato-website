@@ -4,8 +4,11 @@ import moment from "moment-timezone";
 import crypto from "crypto";
 import { orderService } from "../services/orderService.js";
 import { sendOrderConfirmationEmail } from "../utils/mailService.js";
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import asyncHandler from "../utils/asyncHandler.js";
+import AppError from "../utils/AppError.js";
+import { sendSuccess } from "../utils/response.js";
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const USD_TO_VND_RATE = 25000;
 
 function sortObject(obj) {
@@ -34,6 +37,7 @@ const serializeOrder = (order) => ({
         ...item,
         name: item.foodName,
         price: item.foodPrice,
+        quantity: item.quantity,
     })),
 });
 
@@ -90,82 +94,78 @@ const createVnpayUrl = (req, orderId, amountInVND) => {
     return paymentUrl;
 };
 
-const placeOrder = async (req, res, next) => {
+const placeOrder = asyncHandler(async (req, res, next) => {
     const frontend_url = process.env.FRONTEND_URL || "http://localhost:5173";
 
-    try {
+    const userId = req.userId;
+    const paymentMethod = req.body.paymentMethod;
+    const amountUSD = Number(req.body.amount);
+    const address = req.body.address || {};
+    const items = Array.isArray(req.body.items) ? req.body.items : [];
 
-        const userId = req.userId;
-        const paymentMethod = req.body.paymentMethod;
-        const amountUSD = Number(req.body.amount);
-        const address = req.body.address || {};
-        const items = Array.isArray(req.body.items) ? req.body.items : [];
+    const { newOrder, finalAmount, currency } = await orderService.placeOrder(userId, paymentMethod, amountUSD, address, items);
 
-        const { newOrder, finalAmount, currency } = await orderService.placeOrder(userId, paymentMethod, amountUSD, address, items);
+    if (paymentMethod === "stripe") {
+        const line_items = items.map((item) => ({
+            price_data: {
+                currency: "usd",
+                product_data: { name: item.name },
+                unit_amount: Math.round(Number(item.price) * 100),
+            },
+            quantity: item.quantity,
+        }));
 
-        if (paymentMethod === "stripe") {
-            const line_items = items.map((item) => ({
-                price_data: {
-                    currency: "usd",
-                    product_data: { name: item.name },
-                    unit_amount: Math.round(Number(item.price) * 100),
-                },
-                quantity: item.quantity,
-            }));
+        line_items.push({
+            price_data: {
+                currency: "usd",
+                product_data: { name: "Delivery Charges" },
+                unit_amount: 200,
+            },
+            quantity: 1,
+        });
 
-            line_items.push({
-                price_data: {
-                    currency: "usd",
-                    product_data: { name: "Delivery Charges" },
-                    unit_amount: 200,
-                },
-                quantity: 1,
-            });
+        const session = await stripe.checkout.sessions.create({
+            line_items,
+            mode: "payment",
+            success_url: `${frontend_url}/verify?success=true&orderId=${newOrder.id}`,
+            cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder.id}`,
+        });
 
-            const session = await stripe.checkout.sessions.create({
-                line_items,
-                mode: "payment",
-                success_url: `${frontend_url}/verify?success=true&orderId=${newOrder.id}`,
-                cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder.id}`,
-            });
+        return sendSuccess(res, "Tạo link thanh toán thành công", {
+            session_url: session.url,
+            amount: amountUSD,
+            currency: "USD"
+        });
 
-            return sendSuccess(res, "Tạo link thanh toán thành công", {
-                session_url: session.url, // hoặc vnpayUrl
-                amount: amountUSD,
-                currency: "USD"
-            });
-
-        }
-
-        if (paymentMethod === "vnpay") {
-            const vnpayUrl = createVnpayUrl(req, newOrder.id.toString(), finalAmount);
-
-            return sendSuccess(
-                res,
-                "Tạo link thanh toán thành công", {
-                session_url: vnpayUrl,
-                amount: finalAmount,
-                currency: "VND",
-            });
-        };
-    } catch (error) {
-        next(error);
     }
-};
 
-const verifyOrder = async (req, res, next) => {
-    const { orderId, success, email } = req.body;
+    if (paymentMethod === "vnpay") {
+        const vnpayUrl = createVnpayUrl(req, newOrder.id.toString(), finalAmount);
 
-    try {
-        const result = await orderService.verifyOrder(orderId, success);
-        if (result) sendOrderConfirmationEmail(result.email, result);
-        return sendSuccess(res, result.message);
-    } catch (error) {
-        next(error);
+        return sendSuccess(
+            res,
+            "Tạo link thanh toán thành công", {
+            session_url: vnpayUrl,
+            amount: finalAmount,
+            currency: "VND",
+        });
     }
-};
 
-const vnpayReturn = async (req, res) => {
+    throw new AppError("Phương thức thanh toán không hợp lệ", 400);
+});
+
+const verifyOrder = asyncHandler(async (req, res, next) => {
+    const { orderId, success } = req.body;
+
+    const result = await orderService.verifyOrder(orderId, success);
+    if (result) {
+        sendOrderConfirmationEmail(result.email, result);
+        return sendSuccess(res, "Thanh toán thành công");
+    }
+    throw new AppError("Xác minh đơn hàng thất bại", 400);
+});
+
+const vnpayReturn = asyncHandler(async (req, res) => {
     let vnp_Params = { ...req.query };
 
     const secureHash = vnp_Params["vnp_SecureHash"];
@@ -205,150 +205,65 @@ const vnpayReturn = async (req, res) => {
 
         await prisma.order.delete({
             where: { id: orderId },
-        });
+        }).catch(() => { });
         return res.redirect(`${frontend_url}/cart`);
     }
 
     await prisma.order.delete({
         where: { id: orderId },
-    });
+    }).catch(() => { });
     return res.redirect(`${frontend_url}/cart`);
-};
+});
 
-const userOrders = async (req, res, next) => {
-    try {
-        const userId = req.userId;
-        const orders = await orderService.getUserOrders(userId);
-        sendSuccess(res, "Lấy đơn hàng của user thành công", orders.map(serializeOrder));
-    } catch (error) {
-        next(error);
-    }
-};
+const userOrders = asyncHandler(async (req, res, next) => {
+    const userId = req.userId;
+    const orders = await orderService.getUserOrders(userId);
+    sendSuccess(res, "Lấy đơn hàng của user thành công", orders.map(serializeOrder));
+});
 
-const listOrders = async (req, res, next) => {
-    try {
-        const orders = await orderService.getAllOrders();
-        sendSuccess(res, "Lấy danh sách đơn hàng thành công", orders.map(serializeOrder));
-    } catch (error) {
-        next(error);
-    }
-};
+const listOrders = asyncHandler(async (req, res, next) => {
+    const orders = await orderService.getAllOrders();
+    sendSuccess(res, "Lấy danh sách đơn hàng thành công", orders.map(serializeOrder));
+});
 
-const updateStatus = async (req, res, next) => {
-    try {
-        const { orderId, status } = req.body;
-        await orderService.updateOrderStatus(orderId, status);
-        sendSuccess(res, "Đã cập nhật trạng thái");
-    } catch (error) {
-        next(error);
-    }
-};
+const updateStatus = asyncHandler(async (req, res, next) => {
+    const { orderId, status } = req.body;
+    await orderService.updateOrderStatus(orderId, status);
+    sendSuccess(res, "Đã cập nhật trạng thái");
+});
 
-const getRevenueQueryMatch = () => ({ payment: true });
+const getStats = asyncHandler(async (req, res, next) => {
+    const result = await orderService.getStats();
+    sendSuccess(res, "Lấy thống kê thành công", result);
+});
 
-const getStats = async (req, res, next) => {
-    try {
-        const result = await orderService.getStats();
-        sendSuccess(res, "Lấy thống kê thành công", result);
-    } catch (error) {
-        next(error);
-    }
-};
+const getRecentOrders = asyncHandler(async (req, res, next) => {
+    const orders = await orderService.getRecentOrders();
+    sendSuccess(res, "Lấy đơn hàng gần đây thành công", orders.map(serializeOrder));
+});
 
-const getRecentOrders = async (req, res, next) => {
-    try {
-        const orders = await orderService.getRecentOrders();
-        sendSuccess(res, "Lấy đơn hàng gần đây thành công", orders.map(serializeOrder));
-    } catch (error) {
-        next(error);
-    }
-};
+const getMonthlyRevenue = asyncHandler(async (req, res, next) => {
+    const year = parseInt(req.query.year);
+    const month = parseInt(req.query.month);
 
-const padDataForChart = (revenueData, startDate, endDate, label) => {
-    const labels = [];
-    const dataPoints = [];
+    const chart = await orderService.getMonthlyRevenue(year, month);
+    sendSuccess(res, "Thành công", chart);
+});
 
-    const dataMap = new Map(
-        revenueData.map((item) => [item.key, item.value])
-    );
+const getQuarterlyRevenue = asyncHandler(async (req, res, next) => {
+    const year = parseInt(req.query.year);
+    const quarter = parseInt(req.query.quarter);
 
-    let current = new Date(startDate);
+    const chart = await orderService.getQuarterlyRevenue(year, quarter);
 
-    while (current <= endDate) {
-        const dateStr = current.toISOString().split("T")[0];
-        labels.push(dateStr);
-        dataPoints.push(dataMap.get(dateStr) || 0);
-        current.setDate(current.getDate() + 1);
-    }
+    sendSuccess(res, "Thành công", chart);
+});
 
-    return {
-        labels,
-        datasets: [
-            {
-                label,
-                data: dataPoints,
-                backgroundColor: "rgba(153, 102, 255, 0.5)",
-                borderColor: "rgb(153, 102, 255)",
-                borderWidth: 1,
-                tension: 0.4,
-            },
-        ],
-    };
-};
-
-const getPaidOrdersInRange = async (start, end) => {
-    return prisma.order.findMany({
-        where: {
-            ...getRevenueQueryMatch(),
-            createdAt: {
-                gte: start,
-                lte: end,
-            },
-        },
-        select: {
-            amount: true,
-            createdAt: true,
-        },
-        orderBy: {
-            createdAt: "asc",
-        },
-    });
-};
-
-const getMonthlyRevenue = async (req, res, next) => {
-    try {
-        const year = parseInt(req.query.year);
-        const month = parseInt(req.query.month);
-
-        const chart = await orderService.getMonthlyRevenue(year, month);
-        sendSuccess(res, "Thành công", chart);
-    } catch (error) {
-        next(error);
-    }
-};
-
-const getQuarterlyRevenue = async (req, res, next) => {
-    try {
-        const year = parseInt(req.query.year);
-        const quarter = parseInt(req.query.quarter);
-
-        const chart = await orderService.getQuarterlyRevenue(year, quarter);
-
-        sendSuccess(res, "Thành công", chart);
-    } catch (error) {
-        next(error);
-    }
-};
-
-const getYearlyRevenue = async (req, res, next) => {
-    try {
-        const year = parseInt(req.query.year);
-        const data = await orderService.getYearlyRevenue(year);
-        sendSuccess(res, "Thành công", data);
-    } catch (error) {
-        next(error);
-    }
-};
+const getYearlyRevenue = asyncHandler(async (req, res, next) => {
+    const year = parseInt(req.query.year);
+    const data = await orderService.getYearlyRevenue(year);
+    sendSuccess(res, "Thành công", data);
+});
 
 export {
     placeOrder,
