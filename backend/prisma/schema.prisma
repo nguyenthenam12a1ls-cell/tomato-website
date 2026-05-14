@@ -38,6 +38,8 @@ model Food {
 
   cartItems   CartItem[]
   orderItems  OrderItem[]
+
+  @@index([category])
 }
 
 model Cart {
@@ -61,6 +63,7 @@ model CartItem {
   food      Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
 
   @@unique([cartId, foodId])
+  @@index([cartId])
 }
 
 model Order {
@@ -88,6 +91,8 @@ model Order {
 
   user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items          OrderItem[]
+
+  @@index([userId, status, createdAt])
 }
 
 model OrderItem {
