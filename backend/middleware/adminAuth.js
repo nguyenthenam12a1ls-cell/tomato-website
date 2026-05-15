@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../config/prisma.js"
 import { sendError } from "../utils/response.js";
-
-const prisma = new PrismaClient();
 
 const adminAuth = async (req, res, next) => {
 

@@ -7,6 +7,9 @@ const client = createClient({
 client.on('error', (err) => console.log("Redis client error: ", err));
 client.on('connect', () => console.log("Redis Connected!"));
 
-await client.connect();
+// Chỉ kết nối nếu KHÔNG phải môi trường test
+if (process.env.NODE_ENV !== "test") {
+    await client.connect();
+}
 
 export default client;

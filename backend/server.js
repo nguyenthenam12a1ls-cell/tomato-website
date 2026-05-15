@@ -11,8 +11,10 @@ import passport from "./config/passport.js";
 import morgan from "morgan";
 import helmet from "helmet"
 import compression from "compression"
-import globalErrorHandler from "./middleware/errorMiddleware.js";
 
+import globalErrorHandler from "./middleware/errorMiddleware.js";
+import swaggerUi from 'swagger-ui-express';
+import specs from './config/swagger.js';
 
 const app = express();
 const port = 4000;
@@ -24,6 +26,7 @@ app.use(passport.initialize());
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
+
 app.use(compression());
 app.use(morgan("dev"));
 
@@ -40,9 +43,12 @@ app.get("/", (req, res) => {
 
 app.use(globalErrorHandler);
 
-app.listen(port, () => {
-  console.log(`Server started on http://localhost:${port}`);
-});
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
+if (process.env.NODE_ENV !== "test") {
+  app.listen(port, () => {
+    console.log(`Server started on http://localhost:${port}`);
+  });
+}
 
-
+export default app;
