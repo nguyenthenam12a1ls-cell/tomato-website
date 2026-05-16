@@ -1,3 +1,5 @@
+import logger from "../utils/logger.js";
+
 const globalErrorHandler = (err, req, res, next) => {
     let error = { ...err };
     error.message = err.message;
@@ -16,10 +18,18 @@ const globalErrorHandler = (err, req, res, next) => {
         error.status = 'fail';
     }
 
-    res.status(error.statusCode).json({ // Dùng error.statusCode
+    // Ghi log lỗi bằng Winston thay vì console.error
+    logger.error(error.message, { 
+        statusCode: error.statusCode, 
+        stack: err.stack,
+        path: req.originalUrl,
+        method: req.method
+    });
+
+    res.status(error.statusCode).json({
         success: false,
-        status: error.status,         // Dùng error.status
-        message: error.message || "Đã xảy ra lỗi hệ thống", // Dùng error.message
+        status: error.status,
+        message: error.message || "Đã xảy ra lỗi hệ thống",
         stack: process.env.NODE_ENV === "development" ? err.stack : undefined
     });
 };

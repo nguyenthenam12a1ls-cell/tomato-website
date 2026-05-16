@@ -1,0 +1,43 @@
+name: Tự động Kiểm tra và Đóng thùng Backend
+
+# Kích hoạt Robot mỗi khi có người push code lên nhánh main
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  # Công việc 1: Chạy Test tự động (Continuous Integration)
+  test-and-build:
+    runs-on: ubuntu-latest # Thuê một cái máy tính Linux ảo của Github
+
+    steps:
+      # Bước 1: Copy code của bạn vào máy tính ảo
+      - name: Lấy code về
+        uses: actions/checkout@v3
+
+      # Bước 2: Cài Node.js bản 20
+      - name: Cài đặt Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # Bước 3: Đi vào thư mục backend và cài thư viện
+      - name: Cài đặt thư viện
+        run: |
+          cd backend
+          npm install
+
+      # Bước 4: Chạy Test tự động! Nếu test xịt, Robot sẽ báo lỗi đỏ lòm và dừng lại ngay!
+      - name: Chạy Test
+        run: |
+          cd backend
+          npm test
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost/dummy"
+          REDIS_URL: "redis://localhost:6379"
+
+      # Bước 5: Nếu Test PASS, bắt đầu đóng thùng Docker tự động
+      - name: Đóng thùng Docker
+        run: |
+          cd backend
+          docker build -t tomato-backend:latest .
