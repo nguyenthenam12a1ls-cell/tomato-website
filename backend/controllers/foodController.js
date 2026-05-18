@@ -68,6 +68,9 @@ const updateFood = asyncHandler(async (req, res, next) => {
     }
 
     const existingFood = await foodService.getFoodById(foodId);
+    if (!existingFood) {
+        throw new AppError("Không tìm thấy món ăn để cập nhật", 404);
+    }
 
     const newImageFilename = req.file ? req.file.filename : existingFood.image;
 

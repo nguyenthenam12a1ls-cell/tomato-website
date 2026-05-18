@@ -1,5 +1,5 @@
 import { prisma } from "../config/prisma.js"
-import { sendError } from "../utils/response.js";
+import AppError from "../utils/AppError.js";
 
 const adminAuth = async (req, res, next) => {
 
@@ -11,7 +11,7 @@ const adminAuth = async (req, res, next) => {
         });
 
         if (!user || user.role !== "admin") {
-            return sendError(res, "Quyền truy cập bị từ chối", 403);
+            throw new AppError("Quyền truy cập bị từ chối", 403);
         }
         next();
     } catch (error) {
