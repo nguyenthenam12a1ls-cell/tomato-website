@@ -27,10 +27,37 @@ a{
   }
 }
 
-/* CSS cho tiêu đề "Kết quả tìm kiếm" */
 .search-results-title {
   margin-top: 30px;
   font-size: max(2vw, 24px);
   font-weight: 600;
-  color: #262626; /* Hoặc var(--text-color-primary) */
+  color: #262626;
+}
+
+:root {
+  --primary: #ff4c29;
+  --primary-hover: #e03e1b;
+  --bg-color: #fdfdfd;
+  --card-bg: #ffffff;
+  --text-color: #1e1e24;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --shadow-color: rgba(0, 0, 0, 0.05);
+  --nav-bg: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme='dark'] {
+  --bg-color: #0f0f12;
+  --card-bg: #1a1a22;
+  --text-color: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --border-color: #2e2e38;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --nav-bg: rgba(15, 15, 18, 0.85);
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }

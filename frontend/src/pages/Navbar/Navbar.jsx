@@ -4,6 +4,7 @@ import { assets } from '../../assets/assets';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../../Context/CartContext';
 import { useAuth } from '../../Context/AuthContext';
+import { useTheme } from '../../Context/ThemeContext';
 
 const Navbar = ({ setShowLogin }) => {
     const [menu, setMenu] = useState('home');
@@ -12,6 +13,7 @@ const Navbar = ({ setShowLogin }) => {
 
     const { totalAmount, setSearchTerm } = useContext(CartContext);
     const { token, logout, user, url, isUserLoading, isUserError } = useAuth();
+    const {theme, toggleTheme} = useTheme();
     const navigate = useNavigate();
     const profileRef = useRef(null);
 
@@ -53,6 +55,9 @@ const Navbar = ({ setShowLogin }) => {
                 <a href='#explore-menu' onClick={() => setMenu('menu')} className={menu === 'menu' ? 'active' : ''}>Menu</a>
                 <a href='#app-download' onClick={() => setMenu('mobile-app')} className={menu === 'mobile-app' ? 'active' : ''}>Mobile App</a>
                 <a href='#footer' onClick={() => setMenu('contact-us')} className={menu === 'contact-us' ? 'active' : ''}>Liên hệ</a>
+                <button className='theme-toggle' onClick={toggleTheme}>
+                    {theme === 'light' ? '🌙' : '☀️'}
+                </button>
             </ul>
 
             <div className="navbar-right">

@@ -6,6 +6,7 @@ import {BrowserRouter} from 'react-router-dom'
 // 1. Import 2 Context Provider mới
 import AuthContextProvider from './Context/AuthContext.jsx'
 import CartContextProvider from './Context/CartContext.jsx'
+import {ThemeProvider} from "./Context/ThemeContext.jsx";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const queryClient = new QueryClient()
@@ -17,7 +18,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <AuthContextProvider>
         {/* 3. Bọc Cart bên trong (vì CartContext cần token từ AuthContext) */}
         <CartContextProvider>
+          <ThemeProvider>
           <App />
+          </ThemeProvider>
         </CartContextProvider>
       </AuthContextProvider>
     </QueryClientProvider>
