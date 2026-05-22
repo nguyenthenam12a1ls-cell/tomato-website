@@ -80,7 +80,9 @@
 .nav-profile-dropdown{
     position: absolute;
     /* 2. KHÔNG CẦN 'display: none' NỮA VÌ JSX ĐÃ XỬ LÝ */
-    background-color: var(--card-bg);
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     padding: 20px 25px;
     border-radius: 10px;
     border: 1px solid var(--border-color);
@@ -263,7 +265,75 @@
     .navbar-search input {
         width: 180px;
     }
+.menu_hamberger-btn {
+    display: none;
 }
+
+.navbar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 99;
+    animation: fadeIn 0.3s ease;
+}
+
+.navbar-drawer {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 300px;
+    max-width: 80vw;
+    height: 100vh;
+    background-color: var(--card-bg);
+    box-shadow: -5px 0 15px var(--shadow-color);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 30px;
+    transition: right 0.3s ease-in-out;
+}
+
+.navbar-drawer.open {
+    right: 0;
+}
+
+.drawer-close_btn {
+    align-self: flex-end;
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    color: var(--text-color);
+    cursor: pointer;
+    margin-bottom: 30px;
+    transition: color 0.2s;
+}
+
+.drawer-close_btn:hover {
+    color: var(--primary);
+}
+
+.drawer-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    font-size: 20px;
+}
+
+.drawer-links a {
+    color: var(--text-color);
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.drawer-links a:hover,
+.drawer-links .active {
+    color: var(--primary);
+}
+
 @media (max-width:750px) {
     .navbar-menu{
         display: none;
@@ -275,6 +345,19 @@
         left: 50%;
         transform: translateX(-50%);
         top: 80px;
+    }
+    .menu_hamberger-btn {
+        display: block;
+        background: transparent;
+        border: none;
+        font-size: 30px;
+        color: var(--text-color);
+        cursor: pointer;
+        outline: none;
+        order: 2;
+    }
+    .navbar-right {
+        order: 3;
     }
 }
 

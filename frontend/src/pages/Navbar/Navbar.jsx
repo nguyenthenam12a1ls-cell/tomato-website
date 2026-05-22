@@ -13,9 +13,10 @@ const Navbar = ({ setShowLogin }) => {
 
     const { totalAmount, setSearchTerm } = useContext(CartContext);
     const { token, logout, user, url, isUserLoading, isUserError } = useAuth();
-    const {theme, toggleTheme} = useTheme();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const profileRef = useRef(null);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -31,6 +32,17 @@ const Navbar = ({ setShowLogin }) => {
     useEffect(() => {
         setAvatarLoadError(false);
     }, [user?.avatar]);
+
+    useEffect(() => {
+        if (menuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [menuOpen]);
 
     const toggleProfilePopup = () => {
         setShowProfile((prev) => !prev);
@@ -55,10 +67,10 @@ const Navbar = ({ setShowLogin }) => {
                 <a href='#explore-menu' onClick={() => setMenu('menu')} className={menu === 'menu' ? 'active' : ''}>Menu</a>
                 <a href='#app-download' onClick={() => setMenu('mobile-app')} className={menu === 'mobile-app' ? 'active' : ''}>Mobile App</a>
                 <a href='#footer' onClick={() => setMenu('contact-us')} className={menu === 'contact-us' ? 'active' : ''}>Liên hệ</a>
-                <button className='theme-toggle' onClick={toggleTheme}>
-                    {theme === 'light' ? '🌙' : '☀️'}
-                </button>
+                
             </ul>
+
+            <button className="menu_hamberger-btn" onClick={() => setMenuOpen(true)}>☰</button>
 
             <div className="navbar-right">
                 <div className="navbar-search">
@@ -74,6 +86,10 @@ const Navbar = ({ setShowLogin }) => {
                     <Link to='/cart'><img src={assets.basket_icon} alt="" /></Link>
                     <div className={totalAmount === 0 ? '' : 'dot'}></div>
                 </div>
+
+                <button className='theme-toggle' onClick={toggleTheme}>
+                    {theme === 'light' ? '🌙' : '☀️'}
+                </button>
 
                 {!token ? (
                     <button onClick={() => setShowLogin(true)}>Đăng ký</button>
@@ -144,6 +160,19 @@ const Navbar = ({ setShowLogin }) => {
                         )}
                     </div>
                 )}
+            </div>
+
+            {menuOpen && <div className="navbar-overlay" onClick={() => setMenuOpen(false)}></div>}
+
+            <div className={`navbar-drawer ${menuOpen ? 'open' : ' '}`}>
+                <button className="drawer-close_btn" onClick={() => setMenuOpen(false)}>✕</button>
+
+                <ul className="drawer-links">
+                    <Link to='/' onClick={() => { setMenu('home'); setMenuOpen(false); }} className={menu === 'home' ? 'active' : ''}>Trang chủ</Link>
+                    <a href='#explore-menu' onClick={() => { setMenu('menu'); setMenuOpen(false); }} className={menu === 'menu' ? 'active' : ''}>Menu</a>
+                    <a href='#app-download' onClick={() => { setMenu('mobile-app'); setMenuOpen(false); }} className={menu === 'mobile-app' ? 'active' : ''}>Mobile App</a>
+                    <a href='#footer' onClick={() => { setMenu('contact-us'); setMenuOpen(false); }} className={menu === 'contact-us' ? 'active' : ''}>Liên hệ</a>
+                </ul>
             </div>
         </div>
     );

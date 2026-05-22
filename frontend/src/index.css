@@ -39,6 +39,7 @@ a{
   --primary-hover: #e03e1b;
   --bg-color: #fdfdfd;
   --card-bg: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.75);
   --text-color: #1e1e24;
   --text-secondary: #6b7280;
   --border-color: #e5e7eb;
@@ -49,6 +50,7 @@ a{
 [data-theme='dark'] {
   --bg-color: #0f0f12;
   --card-bg: #1a1a22;
+  --glass-bg: rgba(26, 26, 34, 0.75);
   --text-color: #f3f4f6;
   --text-secondary: #9ca3af;
   --border-color: #2e2e38;
