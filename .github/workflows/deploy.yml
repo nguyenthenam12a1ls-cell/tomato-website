@@ -27,6 +27,14 @@ jobs:
           cd backend
           npm install
 
+      # Bước 3.5: Sinh Prisma Client
+      - name: Sinh Prisma Client
+        run: |
+          cd backend
+          npx prisma generate
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost/dummy"
+
       # Bước 4: Chạy Test tự động! Nếu test xịt, Robot sẽ báo lỗi đỏ lòm và dừng lại ngay!
       - name: Chạy Test
         run: |
@@ -35,9 +43,17 @@ jobs:
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost/dummy"
           REDIS_URL: "redis://localhost:6379"
+          JWT_SECRET: "dummy_jwt_secret_key_for_testing_12345"
+          FRONTEND_URL: "http://localhost:5173"
+          STRIPE_SECRET_KEY: "sk_test_dummy_key"
+          VNP_HASHSECRET: "dummy_vnpay_hashsecret"
+          VNP_TMNCODE: "dummy_vnpay_tmncode"
+          GOOGLE_CLIENT_ID: "dummy_google_client_id"
+          GOOGLE_CLIENT_SECRET: "dummy_google_client_secret"
 
       # Bước 5: Nếu Test PASS, bắt đầu đóng thùng Docker tự động
       - name: Đóng thùng Docker
         run: |
           cd backend
           docker build -t tomato-backend:latest .
+
