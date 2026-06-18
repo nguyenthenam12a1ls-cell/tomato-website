@@ -27,14 +27,22 @@ The backend has been migrated to Prisma + PostgreSQL. Responses are modeled for 
 
 ## Core Features
 
-- Email/password authentication
-- Google OAuth login
-- Password reset by email
-- User profile management
-- Food catalog management
-- Cart with quantity tracking
-- Order creation and payment verification
-- Admin dashboard with order and revenue views
+### 👤 Customer App (Frontend)
+- **Authentication & Security:** Secure Email/Password registration & login with JWT, Google OAuth 2.0 integration, and token-based password reset via email.
+- **Dynamic Theming:** Native Light/Dark Mode toggle persisted in LocalStorage via a custom React Theme Context.
+- **Responsive Shell:** Sticky glassmorphic navbar, responsive Mobile Drawer menu with background scroll lock.
+- **Food Directory & Search:** Categorized food selection explorer, search query filtering, and detailed product/food pages (`/food/:foodId`).
+- **Interactive Cart & Checkout:** Persistent cart item quantity tracking, multi-gateway checkout via Stripe (mock card processing) and VNPay (Sandbox integration).
+- **Order Management:** "My Orders" customer portal tracking historical purchases and delivery status.
+- **AI FAQ Chatbot:** Floating AI chatbot overlay (accessible after logging in) assisting customers with standard FAQs.
+- **Real-time Toasts:** Interactive notifications for cart modifications and auth checks via React Toastify.
+
+### 📊 Admin Panel
+- **Analytics Dashboard:** Graphical reports for revenue and orders using Chart.js (monthly, quarterly, yearly metrics).
+- **Catalog Management:** Administrative interface to add, update, list, and delete food items.
+- **Order Logistics:** Real-time order status tracking and status updating (e.g., updating statuses from "Food Processing" to "Delivered").
+- **User Role Authentication:** Protection mechanisms restricting general users from accessing administrative endpoints.
+
 
 ## Repository Structure
 
