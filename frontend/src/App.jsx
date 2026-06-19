@@ -21,7 +21,9 @@ const AboutUs = lazy(() => import('./pages/AboutUs/AboutUs'));
 const Delivery = lazy(() => import('./pages/Delivery/Delivery'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy/PrivacyPolicy'));
 const FoodDetails = lazy(() => import('./pages/FoodDetails/FoodDetails'));
-
+const Vouchers = lazy(() => import('./pages/Vouchers/Vouchers'));
+const Restaurants = lazy(() => import('./pages/Restaurants/Restaurants'));
+const RestaurantDetails = lazy(() => import('./pages/RestaurantDetails/RestaurantDetails'));
 
 const LoadingFallback = () => (
   <div className='verify' style={{minHeight: '60vh'}}>
@@ -65,6 +67,9 @@ const App = () => {
           <Route path='/delivery' element={<Delivery />} />
           <Route path='/privacy-policy' element={<PrivacyPolicy />} />
           <Route path='/food/:foodId' element={<FoodDetails />} />
+          <Route path='/vouchers' element={<Vouchers />} />
+          <Route path='/restaurants' element={<Restaurants />} />
+          <Route path='/restaurant/:id' element={<RestaurantDetails />} />
         </Routes>
       </Suspense>
     </div>

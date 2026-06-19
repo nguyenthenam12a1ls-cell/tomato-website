@@ -1,48 +1,45 @@
-import React, { useState, useContext, useEffect } from 'react' // Thêm useContext, useEffect
-import './Home.css'
+import React, { useState, useContext, useEffect } from 'react'
 import Header from '../../components/Header/Header';
 import ExploreMenu from '../../components/ExploreMenu/ExploreMenu';
 import FoodDisplay from '../../components/FoodDisplay/FoodDisplay';
 import AppDownload from '../../components/AppDownload/AppDownload';
-import { CartContext } from '../../Context/CartContext'; // 1. Import Context
+import FlashSale from '../../components/FlashSale/FlashSale';
+import FeaturedRestaurants from '../../components/FeaturedRestaurants/FeaturedRestaurants';
+import PromoBanners from '../../components/PromoBanners/PromoBanners';
+import PersonalizedRecommendations from '../../components/PersonalizedRecommendations/PersonalizedRecommendations';
+import { CartContext } from '../../Context/CartContext'; 
 
 const Home = () => {
 
   const [category,setCategory]=useState("All");
-
-  // 2. Lấy searchTerm từ Context
   const { searchTerm } = useContext(CartContext);
-
-  // 3. Tạo biến (boolean) để biết người dùng có đang tìm kiếm không
   const isSearching = searchTerm.length > 0;
 
-  // 4. Tự động set Category về "All" khi người dùng bắt đầu tìm kiếm
   useEffect(() => {
     if (isSearching) {
       setCategory("All");
     }
-  }, [searchTerm]); // Chạy lại khi searchTerm thay đổi
+  }, [searchTerm]); 
 
   return (
-    <div>
-      {/* 5. Chỉ hiển thị Header và ExploreMenu nếu KHÔNG tìm kiếm */}
-      {!isSearching && (
+    <div className="bg-background min-h-screen pt-4 pb-12">
+      {!isSearching ? (
         <>
           <Header/>
           <ExploreMenu category={category} setCategory={setCategory}/>
+          <FlashSale />
+          <FeaturedRestaurants setCategory={setCategory} />
+          <FoodDisplay category={category}/>
+          <PromoBanners />
+          <PersonalizedRecommendations />
         </>
-      )}
-
-      {/* 6. Hiển thị tiêu đề "Kết quả" nếu ĐANG tìm kiếm */}
-      {isSearching && (
-        <div className='search-results-title'>
-          <h2>Kết quả tìm kiếm cho: "{searchTerm}"</h2>
+      ) : (
+        <div className="max-w-container-max mx-auto px-4 md:px-margin-desktop py-8 pt-28">
+          <h2 className="text-headline-md font-headline-md font-bold text-on-surface mb-6">Kết quả tìm kiếm cho: "{searchTerm}"</h2>
+          <FoodDisplay category={category}/>
         </div>
       )}
 
-      {/* FoodDisplay luôn luôn hiển thị */}
-      <FoodDisplay category={category}/>
-      
       <AppDownload/>
     </div>
   )
