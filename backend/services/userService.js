@@ -111,14 +111,17 @@ const getProfile = async (userId) => {
         street: user.street,
         ward: user.ward,
         province: user.province,
-        country: user.country
+        country: user.country,
+        dob: user.dob,
+        gender: user.gender,
+        bio: user.bio,
     };
 
 }
 
 const updateProfile = async (userId, profileData, file) => {
 
-    const { name, phone, street, ward, province, country } = profileData;
+    const { name, phone, street, ward, province, country, dob, gender, bio } = profileData;
 
     const updateData = {};
 
@@ -128,6 +131,9 @@ const updateProfile = async (userId, profileData, file) => {
     if (ward !== undefined) updateData.ward = ward;
     if (province !== undefined) updateData.province = province;
     if (country !== undefined) updateData.country = country;
+    if (dob !== undefined) updateData.dob = dob;
+    if (gender !== undefined) updateData.gender = gender;
+    if (bio !== undefined) updateData.bio = bio;
 
     if (file) {
         const newFileName = `${Date.now()}-${file.originalname}`;

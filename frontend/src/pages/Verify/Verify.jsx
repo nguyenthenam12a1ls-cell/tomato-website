@@ -2,6 +2,7 @@ import React from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useContext } from 'react';
 import { AuthContext } from '../../Context/AuthContext';
+import { CartContext } from "../../Context/CartContext";
 import { useEffect } from 'react'
 import axios from 'axios';
 
@@ -11,13 +12,15 @@ const Verify = () => {
     const orderId = searchParams.get("orderId")
 
     const { url } = useContext(AuthContext);
+    const { setCartItems } = useContext(CartContext);
     const navigate = useNavigate();
 
     const verifyPayment = async () => {
         try {
-            const response = await axios.post(url+"/api/order/verify",{success,orderId});
-            if (response.data.success){
-                navigate("/myorders");
+            const response = await axios.post(url + "/api/order/verify", { success, orderId });
+            if (response.data.success) {
+                setCartItems({});
+                navigate('/myorders');
             } else {
                 navigate("/");
             }
@@ -27,9 +30,9 @@ const Verify = () => {
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         verifyPayment();
-    },[])
+    }, [])
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-background">

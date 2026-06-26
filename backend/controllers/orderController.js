@@ -148,7 +148,15 @@ const placeOrder = async (req, res, next) => {
                 amount: finalAmount,
                 currency: "VND",
             });
-        };
+        }
+
+        if (paymentMethod === "cod") {
+            return sendSuccess(
+                res,
+                "Đặt hàng thành công! Vui lòng thanh toán khi nhận hàng.",
+                { orderId: newOrder.id }
+            );
+        }
     } catch (error) {
         next(error);
     }
@@ -162,7 +170,7 @@ const verifyOrder = async (req, res, next) => {
         if (!result) {
             return res.status(200).json({ success: false, message: "Thanh toán thất bại hoặc đơn hàng đã bị hủy" });
         }
-        
+
         sendOrderConfirmationEmail(result.email, result);
         return sendSuccess(res, "Thanh toán đơn hàng thành công");
     } catch (error) {

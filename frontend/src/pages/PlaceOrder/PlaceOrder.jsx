@@ -7,11 +7,11 @@ import { toast } from 'react-toastify';
 
 const PlaceOrder = () => {
   const { totalAmount, food_list, cartItems } = useContext(CartContext);
-  const { token, url } = useAuth();
+  const { token, url, user } = useAuth();
 
   // Combine original fields into the new design's single inputs where possible
   const [data, setData] = useState({
-    fullName: "", phone: "", city: "Ho Chi Minh City", district: "District 1", 
+    fullName: "", phone: "", city: "Ho Chi Minh City", district: "District 1",
     address: "", notes: ""
   });
 
@@ -48,7 +48,7 @@ const PlaceOrder = () => {
       address: {
         firstName: data.fullName.split(' ')[0] || '',
         lastName: data.fullName.split(' ').slice(1).join(' ') || '',
-        email: 'user@example.com', // Placeholder since it's not in new design
+        email: user?.email || '',
         street: data.address,
         city: data.city,
         state: data.district,
@@ -65,12 +65,12 @@ const PlaceOrder = () => {
     try {
       let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
       if (response.data.success) {
-        if(paymentMethod === 'stripe') {
-           const { session_url } = response.data;
-           window.location.replace(session_url);
+        if (paymentMethod === 'stripe') {
+          const { session_url } = response.data;
+          window.location.replace(session_url);
         } else {
-           toast.success("Đặt hàng thành công!");
-           navigate('/myorders');
+          toast.success("Đặt hàng thành công!");
+          navigate('/myorders');
         }
       } else {
         toast.error(response.data.message || "Không thể tạo đơn hàng");
@@ -99,7 +99,7 @@ const PlaceOrder = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
         {/* LEFT COLUMN: Checkout Flow */}
         <div className="lg:col-span-8 space-y-stack-xl">
-          
+
           {/* 1. Delivery Address */}
           <section className="relative">
             <div className="absolute left-[15px] top-[32px] bottom-[-48px] w-[2px] bg-outline-variant z-0 hidden md:block"></div>
@@ -108,7 +108,7 @@ const PlaceOrder = () => {
               <h2 className="text-headline-md font-bold">Địa chỉ giao hàng</h2>
             </div>
             <div className="pl-0 md:pl-12 space-y-stack-md">
-              
+
               {/* Add New Address Button */}
               {!showNewAddress && (
                 <button type="button" onClick={() => setShowNewAddress(true)} className="w-full py-4 border-2 border-dashed border-outline-variant rounded-2xl text-on-surface-variant font-semibold flex items-center justify-center gap-2 hover:bg-surface-container-low transition-colors">
@@ -170,7 +170,7 @@ const PlaceOrder = () => {
             </div>
             <div className="pl-0 md:pl-12 space-y-stack-lg">
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-stack-md">
-                
+
                 {/* Visa Card Selection */}
                 <label className="cursor-pointer group">
                   <input type="radio" name="paymentMethod" value="stripe" checked={paymentMethod === "stripe"} onChange={(e) => setPaymentMethod(e.target.value)} className="peer hidden" />
@@ -256,7 +256,7 @@ const PlaceOrder = () => {
         <aside className="lg:col-span-4 lg:sticky lg:top-24 space-y-stack-lg mt-8 lg:mt-0">
           <div className="bg-surface-container-lowest rounded-2xl shadow-lg p-stack-lg border border-surface-variant overflow-hidden">
             <h3 className="text-headline-md font-bold mb-stack-md">Tóm tắt đơn hàng</h3>
-            
+
             {/* Price Breakdown */}
             <div className="space-y-3">
               <div className="flex justify-between text-body-md text-on-surface-variant">

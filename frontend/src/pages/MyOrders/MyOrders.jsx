@@ -12,7 +12,7 @@ const MyOrders = () => {
   const fetchOrders = async () => {
     try {
       const response = await axios.post(url + "/api/order/userorders", {}, { headers: { token } });
-      setData(response.data.data.sort((a,b) => new Date(b.date) - new Date(a.date)));
+      setData(response.data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
     } catch (error) {
       console.error("Lỗi khi lấy danh sách đơn hàng:", error);
     }
@@ -26,7 +26,7 @@ const MyOrders = () => {
 
   return (
     <div className="max-w-container-max mx-auto px-4 md:px-margin-desktop py-stack-lg flex flex-col md:flex-row gap-gutter mt-20 min-h-[calc(100vh-160px)]">
-      
+
       {/* Sidebar Navigation */}
       <ProfileSidebar />
 
@@ -34,7 +34,7 @@ const MyOrders = () => {
       <main className="flex-grow flex flex-col gap-stack-lg w-full">
         <div className="flex flex-col gap-stack-md">
           <h1 className="font-headline-lg text-headline-lg text-on-background">Lịch sử đơn hàng</h1>
-          
+
           {/* Filter Tabs */}
           <div className="flex items-center gap-stack-sm overflow-x-auto pb-2 border-b border-outline-variant hide-scrollbar">
             <button className="px-6 py-2 md:py-3 rounded-full bg-primary text-white font-label-md text-label-md shadow-md whitespace-nowrap">Tất cả</button>
@@ -43,12 +43,12 @@ const MyOrders = () => {
             <button className="px-6 py-2 md:py-3 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:bg-surface-variant transition-colors whitespace-nowrap">Đã hủy</button>
             <button className="px-6 py-2 md:py-3 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:bg-surface-variant transition-colors whitespace-nowrap">Đang chờ</button>
           </div>
-          
+
           {/* Search & Sort */}
           <div className="flex flex-col md:flex-row gap-stack-md items-start md:items-center justify-between mt-stack-sm">
             <div className="relative w-full md:w-96">
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
-              <input className="w-full pl-12 pr-4 py-3 bg-white border border-outline-variant rounded-xl focus:outline-none focus:border-secondary-container font-body-md text-body-md" placeholder="Tìm kiếm theo mã đơn hoặc tên món..." type="text"/>
+              <input className="w-full pl-12 pr-4 py-3 bg-white border border-outline-variant rounded-xl focus:outline-none focus:border-secondary-container font-body-md text-body-md" placeholder="Tìm kiếm theo mã đơn hoặc tên món..." type="text" />
             </div>
             <div className="flex items-center gap-3 w-full md:w-auto">
               <span className="text-on-surface-variant font-label-md text-label-md whitespace-nowrap">Sắp xếp:</span>
@@ -74,13 +74,13 @@ const MyOrders = () => {
           ) : (
             data.map((order, index) => {
               // Extract order details
-              const date = new Date(order.date || Date.now());
-              const dateStr = `${date.getHours()}:${date.getMinutes() < 10 ? '0' : ''}${date.getMinutes()}, ${date.getDate()} Tháng ${date.getMonth()+1}, ${date.getFullYear()}`;
-              
+              const date = new Date(order.createdAt || Date.now());
+              const dateStr = `${date.getHours()}:${date.getMinutes() < 10 ? '0' : ''}${date.getMinutes()}, ${date.getDate()} Tháng ${date.getMonth() + 1}, ${date.getFullYear()}`;
+
               // Get the first item image for the order card
               const firstItem = order.items[0];
-              const imageUrl = firstItem ? `${url}/images/${firstItem.image}` : '';
-              
+              const imageUrl = '';
+
               // Create summary text: "Phở Đặc Biệt, Quẩy Giòn +1 items"
               let itemsText = "";
               if (order.items.length <= 2) {
@@ -109,7 +109,7 @@ const MyOrders = () => {
                 <div key={index} className="bg-white rounded-xl p-stack-md shadow-sm hover:shadow-md transition-all duration-200 border border-outline-variant/30 hover:border-primary-fixed">
                   <div className="flex justify-between items-start mb-stack-md">
                     <div>
-                      <p className="font-headline-md text-[18px] md:text-headline-md text-on-background uppercase">#{order._id.substring(0,8)}</p>
+                      <p className="font-headline-md text-[18px] md:text-headline-md text-on-background uppercase">#ORD-{String(order.id).padStart(6, '0')}</p>
                       <p className="text-on-surface-variant font-body-md text-sm mt-1">{dateStr}</p>
                     </div>
                     <span className={`px-3 md:px-4 py-1.5 rounded-full font-label-md text-[11px] md:text-label-sm border ${statusStyle}`}>
@@ -117,7 +117,7 @@ const MyOrders = () => {
                       {statusText}
                     </span>
                   </div>
-                  
+
                   <div className="flex gap-4 items-center py-4 border-y border-outline-variant/30">
                     <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container">
                       {imageUrl ? (
@@ -133,7 +133,7 @@ const MyOrders = () => {
                       <p className="text-on-surface-variant font-body-md text-sm mt-1 line-clamp-2">{itemsText}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-stack-md gap-4">
                     <div>
                       <span className="text-on-surface-variant text-label-sm font-label-sm">Tổng cộng:</span>

@@ -69,8 +69,12 @@ const placeOrder = async (userId, paymentMethod, amountUSD, address, items) => {
             finalAmount = Math.round(amountUSD * USD_TO_VND_RATE);
             currency = "vnd";
         }
+        if (paymentMethod === "cod") {
+            finalAmount = Math.round(amountUSD * USD_TO_VND_RATE);
+            currency = "vnd";
+        }
 
-        if (!["stripe", "vnpay"].includes(paymentMethod)) {
+        if (!["stripe", "vnpay", "cod"].includes(paymentMethod)) {
             throw new Error("Phương thức thanh toán không hợp lệ");
         }
 
@@ -116,7 +120,6 @@ const placeOrder = async (userId, paymentMethod, amountUSD, address, items) => {
         });
         return result;
     } catch (error) {
-        console.log(error);
         throw error;
     }
 };

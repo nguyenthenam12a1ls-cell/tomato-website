@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "bio" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "dob" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "gender" TEXT NOT NULL DEFAULT '';
