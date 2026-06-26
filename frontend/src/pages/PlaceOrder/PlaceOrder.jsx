@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const PlaceOrder = () => {
-  const { totalAmount, food_list, cartItems } = useContext(CartContext);
+  const { totalAmount, food_list, cartItems, setCartItems } = useContext(CartContext);
   const { token, url, user } = useAuth();
 
   // Combine original fields into the new design's single inputs where possible
@@ -65,10 +65,13 @@ const PlaceOrder = () => {
     try {
       let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
       if (response.data.success) {
-        if (paymentMethod === 'stripe') {
+        if (paymentMethod === 'stripe' || paymentMethod === "vnpay") {
           const { session_url } = response.data;
           window.location.replace(session_url);
-        } else {
+        } else if (paymentMethod === "cod") {
+          setCartItems({});
+          localStorage.removeItem("discountCode");
+          localStorage.removeItem("discountPercent");
           toast.success("Đặt hàng thành công!");
           navigate('/myorders');
         }
