@@ -6,6 +6,7 @@ import "dotenv/config";
 import "./config/env.js";
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
+import voucherRouter from "./routes/voucherRoute.js";
 import cookieParser from "cookie-parser";
 import passport from "./config/passport.js";
 import morgan from "morgan";
@@ -36,6 +37,7 @@ app.use("/images", express.static("uploads"));
 app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
+app.use('/api/voucher', voucherRouter);
 
 app.get("/", (req, res) => {
   res.send("API Working");

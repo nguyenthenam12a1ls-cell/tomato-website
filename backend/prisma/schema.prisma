@@ -110,3 +110,16 @@ model OrderItem {
   order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   food       Food?    @relation(fields: [foodId], references: [id], onDelete: SetNull)
 }
+
+model Voucher {
+  id           Int      @id @default(autoincrement())
+  code         String   @unique
+  discount     Float
+  discountType String   @default("percent")  // "percent" (phần trăm) hoặc "fixed" (trừ thẳng tiền)
+  minOrder     Float    @default(0)          // Đơn tối thiểu để áp dụng
+  maxUses      Int      @default(100)        // Số lượt dùng tối đa
+  usedCount    Int      @default(0)          // Đã dùng bao nhiêu lượt
+  expiresAt    DateTime                      // Ngày hết hạn
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
