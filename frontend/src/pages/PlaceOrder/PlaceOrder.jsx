@@ -2,13 +2,20 @@ import React, { useState, useEffect, useContext } from 'react';
 import { CartContext } from '../../Context/CartContext.jsx';
 import { useAuth } from '../../Context/AuthContext.jsx';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const PlaceOrder = () => {
   const { totalAmount, food_list, cartItems, setCartItems } = useContext(CartContext);
   const { token, url, user } = useAuth();
+  const navigate = useNavigate();
 
+  const location = useLocation();
+  const {
+    discountAmountState = 0,
+    discountPercent = 0,
+    voucherCode = ""
+  } = location.state || {};
   // Combine original fields into the new design's single inputs where possible
   const [data, setData] = useState({
     fullName: "", phone: "", city: "Ho Chi Minh City", district: "District 1",
@@ -24,9 +31,11 @@ const PlaceOrder = () => {
     setData((data) => ({ ...data, [name]: value }));
   };
 
-  const discountPercent = parseFloat(localStorage.getItem("discountPercent")) || 0;
   const subtotal = totalAmount;
-  const discountAmount = (subtotal * discountPercent) / 100;
+  const discountAmount = discountPercent > 0
+    ? (subtotal * discountPercent) / 100
+    : discountAmountState;
+
   const deliveryFee = subtotal === 0 ? 0 : 2; // For UI matching, maybe $2
   const vat = subtotal * 0.08;
   const totalAfterDiscount = subtotal - discountAmount + deliveryFee + vat;
@@ -83,7 +92,6 @@ const PlaceOrder = () => {
     }
   };
 
-  const navigate = useNavigate();
   useEffect(() => {
     if (!token) {
       navigate('/cart');

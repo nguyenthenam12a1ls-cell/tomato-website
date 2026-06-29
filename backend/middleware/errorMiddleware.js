@@ -19,8 +19,8 @@ const globalErrorHandler = (err, req, res, next) => {
     }
 
     // Ghi log lỗi bằng Winston thay vì console.error
-    logger.error(error.message, { 
-        statusCode: error.statusCode, 
+    logger.error(error.message, {
+        statusCode: error.statusCode,
         stack: err.stack,
         path: req.originalUrl,
         method: req.method

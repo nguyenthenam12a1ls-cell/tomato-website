@@ -1,8 +1,9 @@
-import React, { useContext, useState } from 'react';
-import { CartContext } from '../../Context/CartContext'; 
-import { AuthContext } from '../../Context/AuthContext'; 
+import React, { useContext, useEffect, useState } from 'react';
+import axios from "axios";
+import { toast } from 'react-toastify';
+import { CartContext } from '../../Context/CartContext';
+import { AuthContext } from '../../Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import discountCodes from './discountCodes.json'; 
 import { assets } from '../../assets/assets';
 
 const Cart = () => {
@@ -10,29 +11,57 @@ const Cart = () => {
   const { url } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const [vouchers, setVouchers] = useState([]);
+  const [voucherInput, setVoucherInput] = useState("");
+
+  useEffect(() => {
+    const fetchVouchers = async () => {
+      try {
+        const response = await axios.get(`${url}/api/voucher/list`);
+        if (response.data.success) {
+          setVouchers(response.data.data);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy danh sách voucher", error);
+      }
+    };
+    fetchVouchers();
+  }, [url]);
+
   const [promoCode, setPromoCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
+  const [discountAmountState, setDiscountAmountState] = useState(0);
 
-  const handleApplyPromo = () => {
-    const code = promoCode.toUpperCase().trim();
-    const foundCode = discountCodes.find(item => item.code.toUpperCase() === code);
+  const handleApplyPromo = async () => {
+    if (!voucherInput) {
+      toast.error("Vui lòng nhập hoặc chọn mã giảm giá");
+      return;
+    }
 
-    if (foundCode) {
-      setDiscountPercent(foundCode.discount);
-      alert(`🎉 Mã ${foundCode.code} được áp dụng! Giảm ${foundCode.discount}%`);
-      localStorage.setItem("discountCode", foundCode.code);
-      localStorage.setItem("discountPercent", foundCode.discount);
-    } else {
-      setDiscountPercent(0);
-      alert('❌ Mã giảm giá không hợp lệ!');
-      localStorage.removeItem("discountCode");
-      localStorage.removeItem("discountPercent");
+    try {
+      const response = await axios.post(`${url}/api/voucher/apply`,
+        { code: voucherInput, orderAmount: totalAmount },
+        { headers: { token } }
+      );
+
+      if (response.data.success) {
+        const { discountPercent, discountAmount, message } = response.data.data;
+        setDiscountPercent(discountPercent);
+        setDiscountAmountState(discountAmount);
+        toast.success(message);
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Lỗi khi áp dụng mã giảm giá");
     }
   };
 
   const subtotal = totalAmount;
-  const deliveryFee = subtotal === 0 ? 0 : 2; 
-  const discountAmount = (subtotal * discountPercent) / 100;
+  const deliveryFee = subtotal === 0 ? 0 : 2;
+  const discountAmount = discountPercent > 0
+    ? (subtotal * discountPercent) / 100
+    : discountAmountState;
   // Let's add VAT like the design: Thuế VAT (8%)
   const vat = subtotal * 0.08;
   const total = subtotal - discountAmount + deliveryFee + vat;
@@ -45,11 +74,11 @@ const Cart = () => {
   return (
     <main className="flex-grow max-w-container-max mx-auto px-4 md:px-margin-desktop py-stack-xl w-full mt-20 min-h-screen">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-        
+
         {/* LEFT COLUMN: Cart Items */}
         <div className="lg:col-span-8">
           <h1 className="font-headline-md text-headline-md font-bold text-on-tertiary-fixed mb-stack-lg">Giỏ hàng của bạn</h1>
-          
+
           {subtotal > 0 && (
             <div className="bg-surface-container-low p-stack-md rounded-xl mb-stack-lg flex flex-col gap-1 border-l-4 border-secondary">
               <div className="flex items-center gap-2">
@@ -68,7 +97,7 @@ const Cart = () => {
                     <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => navigate(`/food/${item.id}`)}>
                       <img className="w-full h-full object-cover" src={url + "/images/" + item.image} alt={item.name} />
                     </div>
-                    
+
                     <div className="flex-grow flex flex-col justify-between">
                       <div className="flex justify-between items-start">
                         <div className="cursor-pointer" onClick={() => navigate(`/food/${item.id}`)}>
@@ -79,15 +108,15 @@ const Cart = () => {
                           <span className="material-symbols-outlined text-[20px]">delete</span>
                         </button>
                       </div>
-                      
+
                       <div className="flex justify-between items-center mt-stack-sm">
                         <div className="flex items-center gap-3 bg-surface-container rounded-full px-3 py-1">
                           <button onClick={() => removeFromCart(item.id)} className="w-6 h-6 flex items-center justify-center text-primary font-bold hover:bg-surface-container-highest rounded-full transition-colors">
-                             <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>remove</span>
+                            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>remove</span>
                           </button>
                           <span className="font-label-md text-[14px] w-4 text-center select-none">{cartItems[item.id]}</span>
                           <button onClick={() => addToCart(item.id)} className="w-6 h-6 flex items-center justify-center text-primary font-bold hover:bg-surface-container-highest rounded-full transition-colors">
-                             <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>add</span>
+                            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>add</span>
                           </button>
                         </div>
                         <span className="font-label-md text-[16px] md:text-label-md text-primary font-bold">${(item.price * cartItems[item.id]).toFixed(2)}</span>
@@ -118,26 +147,56 @@ const Cart = () => {
               <hr className="my-stack-xl border-outline-variant opacity-30" />
 
               <div className="space-y-stack-lg">
-                <div className="space-y-stack-sm">
-                  <label className="font-label-md text-label-md text-on-surface">Mã giảm giá</label>
-                  <div className="flex gap-2">
-                    <input 
-                      className="flex-grow bg-surface-container-lowest border-outline rounded-lg px-4 py-2 focus:ring-secondary focus:border-secondary text-on-surface outline-none border" 
-                      placeholder="Nhập mã ưu đãi..." 
-                      type="text"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                    />
-                    <button onClick={handleApplyPromo} className="bg-primary text-on-primary px-6 py-2 rounded-lg font-bold hover:bg-primary-container transition-colors active:scale-95">Áp dụng</button>
+                <div className="flex-1 mt-6 lg:mt-0">
+                  <div>
+                    <p className="text-on-surface mb-2 font-medium">Bạn có mã giảm giá không?</p>
+                    <div className="flex bg-surface-container rounded-lg overflow-hidden border border-outline-variant">
+                      <input
+                        type="text"
+                        placeholder="Nhập mã giảm giá..."
+                        className="bg-transparent px-4 py-2 flex-1 focus:outline-none"
+                        value={voucherInput}
+                        onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
+                      />
+                      <button
+                        onClick={handleApplyPromo}
+                        className="bg-primary text-on-primary px-6 py-2 font-medium hover:bg-primary/90 transition-colors"
+                      >
+                        ÁP DỤNG
+                      </button>
+                    </div>
                   </div>
-                  {discountPercent > 0 && (
-                    <div className="flex items-center gap-2 bg-[#E1F2E5] text-[#2D6A4F] px-3 py-1.5 rounded-lg w-fit mt-2">
-                      <span className="material-symbols-outlined text-[18px]">verified</span>
-                      <span className="font-label-sm text-label-sm font-bold">Mã đã áp dụng (-{discountPercent}%)</span>
+
+                  {/* Danh sách các voucher hiển thị bên dưới */}
+                  {vouchers.length > 0 && (
+                    <div className="mt-4 p-4 border border-outline-variant rounded-lg bg-surface-container-low shadow-sm">
+                      <p className="font-semibold text-on-surface mb-3 flex items-center gap-2">
+                        🎟️ Mã giảm giá dành cho bạn:
+                      </p>
+                      <div className="flex flex-col gap-3">
+                        {vouchers.map((v) => (
+                          <div key={v.id} className="flex justify-between items-center bg-white p-3 rounded-lg border border-dashed border-primary shadow-sm hover:shadow-md transition-shadow">
+                            <div>
+                              <span className="font-bold text-primary text-lg tracking-wide">{v.code}</span>
+                              <p className="text-sm text-on-surface-variant mt-1">
+                                Giảm {v.discountType === 'percent' ? `${v.discount}%` : `$${v.discount}`}
+                                <span className="text-xs ml-1 text-gray-500">(Đơn tối thiểu ${v.minOrder})</span>
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => setVoucherInput(v.code)}
+                              className="text-sm bg-primary/10 text-primary px-4 py-2 rounded-full font-bold hover:bg-primary hover:text-white transition-colors"
+                            >
+                              Chọn
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
-                
+
+
                 <div className="space-y-stack-sm mt-4">
                   <label className="font-label-md text-label-md text-on-surface">Ghi chú cho tài xế</label>
                   <textarea className="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-3 focus:ring-secondary focus:border-secondary outline-none text-on-surface" placeholder="Ghi chú cho tài xế..." rows="3"></textarea>
@@ -151,10 +210,10 @@ const Cart = () => {
         {subtotal > 0 && (
           <div className="lg:col-span-4 mt-8 lg:mt-0">
             <div className="sticky top-28 space-y-stack-lg">
-              
+
               <div className="bg-surface-container-lowest rounded-xl shadow-md p-stack-lg border border-outline-variant">
                 <h2 className="font-headline-md text-[20px] font-bold text-on-tertiary-fixed mb-stack-md">Tổng cộng</h2>
-                
+
                 {/* Free Ship Progress */}
                 <div className="mb-stack-lg bg-surface-container-low p-3 rounded-lg border border-primary-fixed">
                   <div className="flex justify-between items-center mb-2">
@@ -201,8 +260,14 @@ const Cart = () => {
                 </div>
 
                 {/* Checkout Button */}
-                <button 
-                  onClick={() => navigate('/order')}
+                <button
+                  onClick={() => navigate('/order', {
+                    state: {
+                      discountAmountState,
+                      discountPercent,
+                      voucherCode: voucherInput
+                    }
+                  })}
                   className="w-full bg-primary text-on-primary py-4 rounded-xl font-bold text-lg hover:bg-primary-container transform active:scale-[0.98] transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                 >
                   <span>Thanh toán ngay</span>
@@ -218,7 +283,7 @@ const Cart = () => {
               <div className="bg-surface-container-lowest rounded-xl p-stack-md border border-outline-variant">
                 <h4 className="font-label-md text-label-md font-bold mb-stack-md">Thêm vào đơn cho đủ miễn ship</h4>
                 <div className="space-y-stack-sm">
-                  
+
                   <div className="flex items-center gap-3 p-2 hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer group">
                     <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
                       <img className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZTh_9VFS0Dq8hD7zTbJA2sxfdrDzfsBu5rwJ8-OtcwJemN_TqzAMwPNdsOFLkW5L0IIpvVXwO6ybXk2V5Hxgm8pVNshy8s1nAgbCXQzzqxnaNChrbqMqkuoWGSfhZooZgmY-XMzrCvJ_DpweNLvaGVaEaE0ddZGWSv21tS2sWaN1QVgQJIgRmCcBP4Xd9rGerCdT7-L2ek3Dr0Fj1Ixg9TnE4IY5HvGlwRCHFhBfJ2UXUV0-AUgw" alt="Coca" />
@@ -244,7 +309,7 @@ const Cart = () => {
                       <span className="material-symbols-outlined">add</span>
                     </button>
                   </div>
-                  
+
                 </div>
               </div>
             </div>
