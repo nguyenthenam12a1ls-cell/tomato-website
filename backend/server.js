@@ -12,7 +12,7 @@ import passport from "./config/passport.js";
 import morgan from "morgan";
 import helmet from "helmet"
 import compression from "compression"
-
+import restaurantRouter from "./routes/restaurantRoute.js";
 import globalErrorHandler from "./middleware/errorMiddleware.js";
 import swaggerUi from 'swagger-ui-express';
 import specs from './config/swagger.js';
@@ -38,6 +38,7 @@ app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 app.use('/api/voucher', voucherRouter);
+app.use('/api/restaurant', restaurantRouter);
 
 app.get("/", (req, res) => {
   res.send("API Working");

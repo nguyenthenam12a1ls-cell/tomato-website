@@ -1,23 +1,32 @@
 import React, { useContext, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CartContext } from '../../Context/CartContext';
-import { mockRestaurants } from '../Restaurants/Restaurants';
+import { useAuth } from '../../Context/AuthContext';
+import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
 
 const RestaurantDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { url } = useAuth();
     const { food_list, cartItems, addToCart, removeFromCart, totalAmount } = useContext(CartContext);
 
-    const restaurant = useMemo(() => {
-        return mockRestaurants.find(r => r.id === id) || mockRestaurants[0];
-    }, [id]);
+    // 1. Gọi API lấy chi tiết nhà hàng từ Backend
+    const { data: restaurant, isLoading, isError } = useQuery({
+        queryKey: ['restaurant', id],
+        queryFn: async () => {
+            const res = await axios.get(`${url}/api/restaurant/${id}`);
+            return res.data.data;
+        }
+    });
 
-    // Filter food items corresponding to this restaurant's category
+    // 2. Lọc danh sách món ăn (Tạm thời chúng ta sẽ hiển thị toàn bộ menu của quán, sau này nâng cấp Database thêm khóa ngoại sẽ lọc chính xác hơn)
     const restaurantFoods = useMemo(() => {
-        if (!food_list) return [];
-        return food_list.filter(food => food.category === restaurant.categoryMapping);
+        if (!food_list || !restaurant) return [];
+        return food_list;
     }, [food_list, restaurant]);
 
+    // 3. Quản lý giỏ hàng bên tay phải
     const activeCartItems = useMemo(() => {
         if (!food_list || !cartItems) return [];
         return food_list
@@ -28,44 +37,65 @@ const RestaurantDetails = () => {
             }));
     }, [food_list, cartItems]);
 
+    const getImageUrl = (imageName) => {
+        if (!imageName) return "";
+        if (imageName.startsWith("http")) return imageName;
+        return url + "/images/" + imageName;
+    };
+
+    // Hiển thị vòng xoay đang tải khi gọi mạng
+    if (isLoading) {
+        return (
+            <main className="pt-20 min-h-screen bg-background flex items-center justify-center">
+                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </main>
+        );
+    }
+
+    // Hiển thị báo lỗi nếu id không tồn tại
+    if (isError || !restaurant) {
+        return (
+            <main className="pt-20 min-h-screen bg-background flex flex-col items-center justify-center">
+                <h2 className="text-2xl font-bold text-on-surface">Không tìm thấy nhà hàng</h2>
+                <button onClick={() => navigate('/restaurants')} className="mt-4 text-primary hover:underline">Quay lại danh sách</button>
+            </main>
+        );
+    }
+
     return (
         <main className="pt-20 min-h-screen bg-background">
-            {/* 1. HEADER QUÁN */}
+            {/* PHẦN 1: HEADER QUÁN KÉO DÀI TRÊN CÙNG */}
             <section className="relative w-full aspect-[21/9] md:aspect-[16/6] overflow-hidden">
-                <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${restaurant.image})` }}>
+                <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${getImageUrl(restaurant.image)})` }}>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                 </div>
-                
+
                 <div className="absolute bottom-0 left-0 w-full px-4 md:px-margin-desktop pb-6 flex flex-col md:flex-row md:items-end gap-6 z-10">
-                    {/* Logo */}
                     <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-full border-4 border-background bg-white shadow-lg overflow-hidden shrink-0">
-                        <img className="w-full h-full object-cover" src={restaurant.logo} alt="Logo" />
+                        <img className="w-full h-full object-cover" src={getImageUrl(restaurant.logo)} alt="Logo" />
                     </div>
-                    {/* Info */}
                     <div className="flex-grow text-white pb-1">
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="bg-[#4CAF50] text-white px-3 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider">Đang mở</span>
+                            {restaurant.isOpen !== false && <span className="bg-[#4CAF50] text-white px-3 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider">Đang mở</span>}
                             <div className="flex items-center gap-1 text-yellow-400">
-                                <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
-                                <span className="font-bold">{restaurant.rating}</span>
+                                <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                                <span className="font-bold">{restaurant.rating || "5.0"}</span>
                             </div>
                         </div>
                         <h1 className="font-headline-lg text-[24px] md:text-[36px] font-bold drop-shadow-md">{restaurant.name}</h1>
                         <p className="text-white/80 text-sm mb-2">{restaurant.description}</p>
                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-white/70">
-                            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">location_on</span> {restaurant.address}</span>
-                            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">schedule</span> {restaurant.time}</span>
-                            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">delivery_dining</span> {restaurant.ship}</span>
-                            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">alarm</span> {restaurant.hours}</span>
+                            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">location_on</span> {restaurant.address || "Chi nhánh chính"}</span>
+                            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">schedule</span> {restaurant.deliveryTime || "30-45'"}</span>
+                            <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">delivery_dining</span> {restaurant.deliveryFee ? `$${restaurant.deliveryFee} ship` : "Free ship"}</span>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Main Content Area */}
+            {/* PHẦN 2: THỰC ĐƠN VÀ GIỎ HÀNG BÊN PHẢI */}
             <div className="max-w-container-max mx-auto px-4 md:px-margin-desktop py-8 flex flex-col md:flex-row gap-gutter items-start">
-                
-                {/* Left Side: Menu Items */}
+
                 <div className="flex-grow w-full md:w-2/3">
                     <h2 className="font-headline-md text-headline-md font-bold mb-6 flex items-center gap-2">
                         Thực đơn của quán <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
@@ -83,7 +113,7 @@ const RestaurantDetails = () => {
                                 return (
                                     <div key={index} className="bg-white p-4 rounded-2xl flex gap-4 shadow-sm hover:shadow-md transition-shadow border border-outline-variant/30 group">
                                         <div className="w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden shrink-0 bg-surface-container-low">
-                                            <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src={`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/images/${food.image}`} alt={food.name} />
+                                            <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src={`${url}/images/${food.image}`} alt={food.name} />
                                         </div>
                                         <div className="flex flex-col justify-between flex-grow">
                                             <div>
@@ -93,11 +123,11 @@ const RestaurantDetails = () => {
                                                 </div>
                                                 <p className="text-on-surface-variant text-[12px] line-clamp-2">{food.description}</p>
                                             </div>
-                                            
+
                                             <div className="flex justify-end mt-2">
                                                 {qty === 0 ? (
-                                                    <button 
-                                                        onClick={() => addToCart(food.id || food._id)} 
+                                                    <button
+                                                        onClick={() => addToCart(food.id || food._id)}
                                                         className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">add</span>
@@ -118,7 +148,6 @@ const RestaurantDetails = () => {
                     )}
                 </div>
 
-                {/* Right Side: Cart Sidebar */}
                 <aside className="w-full md:w-1/3 sticky top-24 bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
                     <div className="p-5 bg-surface-container-low border-b border-outline-variant/50">
                         <h3 className="font-bold text-lg text-on-surface">Giỏ hàng của bạn</h3>
@@ -153,9 +182,9 @@ const RestaurantDetails = () => {
                             <span>Tạm tính:</span>
                             <span className="text-primary text-[16px]">${totalAmount.toFixed(2)}</span>
                         </div>
-                        <button 
+                        <button
                             disabled={activeCartItems.length === 0}
-                            onClick={() => navigate('/order')} 
+                            onClick={() => navigate('/order')}
                             className="w-full py-3 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 transition-opacity shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Thanh toán ngay

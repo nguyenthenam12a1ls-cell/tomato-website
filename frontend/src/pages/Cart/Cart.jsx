@@ -8,7 +8,7 @@ import { assets } from '../../assets/assets';
 
 const Cart = () => {
   const { cartItems, food_list, removeFromCart, totalAmount, addToCart } = useContext(CartContext);
-  const { url } = useContext(AuthContext);
+  const { url, token } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [vouchers, setVouchers] = useState([]);
