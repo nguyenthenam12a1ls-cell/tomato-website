@@ -140,17 +140,23 @@ const verifyOrder = async (orderId, success) => {
     });
 };
 
-const getUserOrders = async (userId) => {
+const getUserOrders = async (userId, status = null) => {
     const orders = await prisma.order.findMany({
-        where: { userId: Number(userId) },
+        where: {
+            userId: Number(userId),
+            ...(status && { status: status })
+        },
         include: { items: true },
         orderBy: { createdAt: "desc" },
     });
     return orders;
 };
 
-const getAllOrders = async () => {
+const getAllOrders = async (status = null) => {
     const orders = await prisma.order.findMany({
+        where: {
+            ...(status && { status: status })
+        },
         include: { items: true },
         orderBy: { createdAt: "desc" },
     });

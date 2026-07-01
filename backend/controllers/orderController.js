@@ -235,7 +235,8 @@ const vnpayReturn = async (req, res, next) => {
 const userOrders = async (req, res, next) => {
     try {
         const userId = req.userId;
-        const orders = await orderService.getUserOrders(userId);
+        const { status } = req.body;
+        const orders = await orderService.getUserOrders(userId, status);
         sendSuccess(res, "Lấy đơn hàng của user thành công", orders.map(serializeOrder));
     } catch (error) {
         next(error);
@@ -244,7 +245,8 @@ const userOrders = async (req, res, next) => {
 
 const listOrders = async (req, res, next) => {
     try {
-        const orders = await orderService.getAllOrders();
+        const { status } = req.query;
+        const orders = await orderService.getAllOrders(status);
         sendSuccess(res, "Lấy danh sách đơn hàng thành công", orders.map(serializeOrder));
     } catch (error) {
         next(error);
@@ -367,12 +369,45 @@ const getYearlyRevenue = async (req, res, next) => {
     }
 };
 
+const cancelOrder = async (req, res, next) => {
+    try {
+        const orderId = Number(req.params.id);
+        const userId = req.userId;
+
+        const order = await prisma.order.findUnique({
+            where: { id: orderId },
+        });
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
+        }
+
+        if (order.userId !== userId) {
+            return res.status(403).json({ success: false, message: "Không có quyền hủy đơn hàng này" });
+        }
+
+        if (order.status !== "Food Processing") {
+            return res.status(400).json({ success: false, message: "Chỉ có thể hủy đơn hàng đang chờ xử lý" });
+        }
+
+        await prisma.order.update({
+            where: { id: orderId },
+            data: { status: "Cancelled" }
+        });
+
+        sendSuccess(res, "Đã hủy đơn hàng thành công");
+    } catch (error) {
+        next(error);
+    }
+}
+
 export {
     placeOrder,
     verifyOrder,
     vnpayReturn,
     userOrders,
     listOrders,
+    cancelOrder,
     updateStatus,
     getStats,
     getRecentOrders,

@@ -1,5 +1,5 @@
 import express from "express"
-import { placeOrder, verifyOrder, vnpayReturn, userOrders, listOrders, updateStatus, getStats, getRecentOrders, getQuarterlyRevenue, getMonthlyRevenue, getYearlyRevenue } from "../controllers/orderController.js"
+import { placeOrder, verifyOrder, vnpayReturn, userOrders, listOrders, cancelOrder, updateStatus, getStats, getRecentOrders, getQuarterlyRevenue, getMonthlyRevenue, getYearlyRevenue } from "../controllers/orderController.js"
 import { generalLimiter } from "../middleware/rateLimiter.js";
 import authMiddleware from "../middleware/auth.js";
 import adminAuth from "../middleware/adminAuth.js";
@@ -59,7 +59,7 @@ orderRouter.post("/userorders", generalLimiter, authMiddleware, userOrders);
 orderRouter.get('/list', generalLimiter, authMiddleware, adminAuth, listOrders);
 
 orderRouter.post('/status', generalLimiter, authMiddleware, adminAuth, updateStatus);
-
+orderRouter.post('/:id/cancel', generalLimiter, authMiddleware, cancelOrder);
 /**
  * @swagger
  * /api/order/stats:

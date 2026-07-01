@@ -6,23 +6,46 @@ import { useNavigate } from 'react-router-dom';
 
 const MyOrders = () => {
   const [data, setData] = useState([]);
+  const [activeFilter, setActiveFilter] = useState('all');
   const { url, token } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const fetchOrders = async () => {
+  const filterMap = {
+    'all': null,
+    'processing': 'Food Processing',
+    'delivered': 'Delivered',
+    'cancelled': 'Cancelled',
+  };
+
+  const fetchOrders = async (status = null) => {
     try {
-      const response = await axios.post(url + "/api/order/userorders", {}, { headers: { token } });
+      const response = await axios.post(url + "/api/order/userorders", { status }, { headers: { token } });
       setData(response.data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
     } catch (error) {
       console.error("Lỗi khi lấy danh sách đơn hàng:", error);
     }
   };
 
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) return;
+    try {
+      const res = await axios.post(url + `/api/order/${orderId}/cancel`, {}, { headers: { token } });
+      if (res.data.success) {
+        alert("Hủy đơn thành công!");
+        fetchOrders(filterMap[activeFilter]);
+      } else {
+        alert(res.data.message);
+      }
+    } catch (error) {
+        alert(error.response?.data?.message || "Có lỗi xảy ra");
+    }
+  };
+
   useEffect(() => {
     if (token) {
-      fetchOrders();
+      fetchOrders(filterMap[activeFilter]);
     }
-  }, [token]);
+  }, [token, activeFilter]);
 
   return (
     <div className="max-w-container-max mx-auto px-4 md:px-margin-desktop py-stack-lg flex flex-col md:flex-row gap-gutter mt-20 min-h-[calc(100vh-160px)]">
@@ -37,11 +60,24 @@ const MyOrders = () => {
 
           {/* Filter Tabs */}
           <div className="flex items-center gap-stack-sm overflow-x-auto pb-2 border-b border-outline-variant hide-scrollbar">
-            <button className="px-6 py-2 md:py-3 rounded-full bg-primary text-white font-label-md text-label-md shadow-md whitespace-nowrap">Tất cả</button>
-            <button className="px-6 py-2 md:py-3 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:bg-surface-variant transition-colors whitespace-nowrap">Đang giao</button>
-            <button className="px-6 py-2 md:py-3 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:bg-surface-variant transition-colors whitespace-nowrap">Đã nhận</button>
-            <button className="px-6 py-2 md:py-3 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:bg-surface-variant transition-colors whitespace-nowrap">Đã hủy</button>
-            <button className="px-6 py-2 md:py-3 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:bg-surface-variant transition-colors whitespace-nowrap">Đang chờ</button>
+            {[
+              { id: 'all', label: 'Tất cả' },
+              { id: 'processing', label: 'Đang xử lý' },
+              { id: 'delivered', label: 'Đã nhận' },
+              { id: 'cancelled', label: 'Đã hủy' }
+            ].map(tab => (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveFilter(tab.id)}
+                className={`px-6 py-2 md:py-3 rounded-full font-label-md text-label-md whitespace-nowrap transition-colors ${
+                  activeFilter === tab.id 
+                    ? 'bg-primary text-white shadow-md' 
+                    : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-variant'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           {/* Search & Sort */}
@@ -101,6 +137,9 @@ const MyOrders = () => {
                 statusStyle = "bg-orange-100 text-orange-700 border-orange-200 flex items-center gap-1";
                 statusText = "Đang giao";
                 isProcessing = true;
+              } else if (order.status === 'Cancelled') {
+                statusStyle = "bg-red-100 text-red-700 border-red-200";
+                statusText = "Đã hủy";
               } else {
                 statusStyle = "bg-surface-variant text-on-surface-variant border-outline-variant";
               }
@@ -140,11 +179,13 @@ const MyOrders = () => {
                       <p className="text-primary font-bold text-xl">${parseFloat(order.amount).toFixed(2)}</p>
                     </div>
                     <div className="flex gap-2 w-full md:w-auto">
-                      <button className="flex-1 md:flex-none px-4 md:px-6 py-2.5 rounded-xl border border-outline text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors whitespace-nowrap">Chi tiết</button>
+                      {order.status === 'Food Processing' && (
+                          <button onClick={() => handleCancelOrder(order.id)} className="flex-1 md:flex-none px-4 md:px-6 py-2.5 rounded-xl border border-red-500 text-red-500 font-label-md text-label-md hover:bg-red-50 transition-colors whitespace-nowrap">Hủy đơn</button>
+                      )}
                       {order.status === 'Delivered' ? (
                         <button onClick={() => navigate('/')} className="flex-1 md:flex-none px-4 md:px-6 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap">Mua lại</button>
                       ) : (
-                        <button className="flex-1 md:flex-none px-4 md:px-6 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap">Theo dõi</button>
+                        <button className="flex-1 md:flex-none px-4 md:px-6 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap">Chi tiết</button>
                       )}
                     </div>
                   </div>
